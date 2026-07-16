@@ -20,19 +20,28 @@
 </head>
 <body>
   <div id="__bundler_thumbnail">
-  <svg sc-camel-view-box="0 0 440 320" xmlns="http://www.w3.org/2000/svg">
-    <g fill="none" stroke="#DDB264" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
-      <path d="M220,256 C198,222 192,176 220,114 C248,176 242,222 220,256 Z"></path>
-      <path d="M228,252 C258,226 270,186 260,142 C290,180 290,228 236,254 Z"></path>
-      <path d="M212,252 C182,226 170,186 180,142 C150,180 150,228 204,254 Z"></path>
-      <path d="M234,256 C282,234 306,196 304,148 C342,196 332,244 248,260 Z"></path>
-      <path d="M206,256 C158,234 134,196 136,148 C98,196 108,244 192,260 Z"></path>
-      <path d="M240,260 C300,248 352,218 382,170 C392,220 350,254 272,266 C256,268 246,265 240,260 Z"></path>
-      <path d="M200,260 C140,248 88,218 58,170 C48,220 90,254 168,266 C184,268 194,265 200,260 Z"></path>
-    </g>
-  </svg>
+  <style>
+    #__bundler_thumbnail { flex-direction: column; background: radial-gradient(120% 90% at 50% 42%, #641821 0%, #57131A 55%, #420D13 100%); }
+    #__bundler_loading { background: none; box-shadow: none; color: rgba(240,225,190,.55); left: 0; right: 0; bottom: 30px; text-align: center; font-size: 10px; letter-spacing: .3em; text-transform: uppercase; font-family: Georgia, serif; }
+    @keyframes vdFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    @keyframes vdDot { 0%, 80%, 100% { opacity: .2; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
+  </style>
+  <div style="text-align:center; animation: vdFade 1.1s ease both; padding: 0 24px;">
+    <div style="display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:30px;">
+      <div style="width:54px; height:1px; background:linear-gradient(90deg, rgba(201,161,92,0), #C9A15C);"></div>
+      <div style="width:7px; height:7px; background:#C9A15C; transform:rotate(45deg);"></div>
+      <div style="width:54px; height:1px; background:linear-gradient(270deg, rgba(201,161,92,0), #C9A15C);"></div>
+    </div>
+    <div style="font-family:Georgia, 'Times New Roman', serif; font-size:clamp(38px, 6.5vw, 60px); letter-spacing:.34em; margin-left:.34em; color:#F0E1BE;">VEDAM</div>
+    <div style="font-family:Georgia, serif; font-style:italic; font-size:16px; color:rgba(240,225,190,.72); margin-top:18px;">Tradition Reimagined</div>
+    <div style="display:flex; justify-content:center; gap:9px; margin-top:38px;">
+      <div style="width:5px; height:5px; border-radius:50%; background:#C9A15C; animation:vdDot 1.3s ease infinite;"></div>
+      <div style="width:5px; height:5px; border-radius:50%; background:#C9A15C; animation:vdDot 1.3s ease .18s infinite;"></div>
+      <div style="width:5px; height:5px; border-radius:50%; background:#C9A15C; animation:vdDot 1.3s ease .36s infinite;"></div>
+    </div>
+  </div>
 </div>
-  <div id="__bundler_loading">Unpacking...</div>
+  <div id="__bundler_loading"></div>
 
   <script>
     
@@ -81,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     let template = JSON.parse(templateEl.textContent);
 
     const uuids = Object.keys(manifest);
-    setStatus('Unpacking ' + uuids.length + ' assets...');
+    setStatus('');
 
     const blobUrls = {};
     const resourceBlobs = {};
