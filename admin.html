@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Owner Portal — Vedam</title>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin="anonymous">
+<style>
+  :root {
+    --cream: #F7ECDE; --cream-2: #F3E6C8; --card: #FCF5EA;
+    --ink: #3A1210; --ink-2: #6B4A41; --ink-3: #8A6A5F;
+    --maroon: #6A0F0C; --terra: #A5341F; --gold: #CBA14C;
+    --line: rgba(106, 15, 12, .16);
+    --good: #2E6B3E; --warn: #8A5A00;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--cream); color: var(--ink);
+    font: 15px/1.55 Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 28px clamp(16px, 4vw, 40px) 80px; }
+  header.top { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 6px 0 18px; border-bottom: 1px solid var(--line); }
+  .brand { font-size: 26px; letter-spacing: .38em; color: var(--maroon); }
+  .brand small { display: block; letter-spacing: .18em; font-size: 11px; color: var(--ink-2); margin-top: 2px; text-transform: uppercase; }
+  .who { font-size: 13px; color: var(--ink-2); text-align: right; }
+  .who button { margin-left: 10px; }
+  h2 { font-size: 13px; letter-spacing: .22em; text-transform: uppercase; color: var(--maroon); margin: 40px 0 14px; font-weight: 400; }
+  h2 .sub { text-transform: none; letter-spacing: 0; color: var(--ink-3); font-size: 12px; margin-left: 10px; }
+  button, .btn {
+    font: 13px Georgia, serif; letter-spacing: .06em; cursor: pointer;
+    background: var(--maroon); color: var(--cream-2); border: 0; border-radius: 3px; padding: 7px 16px;
+  }
+  button.ghost { background: transparent; color: var(--maroon); border: 1px solid var(--maroon); }
+  button:disabled { opacity: .5; cursor: default; }
+  input[type=email], input[type=password], input[type=text] {
+    font: 15px Georgia, serif; color: var(--ink);
+    background: #FFFDF8; border: 1px solid var(--line); border-radius: 3px; padding: 9px 12px; width: 100%;
+  }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 20px; }
+  .msg { font-size: 13px; margin-top: 10px; color: var(--terra); min-height: 18px; }
+  .muted { color: var(--ink-3); font-size: 13px; }
+
+  /* sign-in */
+  #gate { max-width: 380px; margin: 9vh auto 0; }
+  #gate .card { padding: 28px; }
+  #gate label { display: block; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); margin: 14px 0 5px; }
+  #gate button { width: 100%; margin-top: 18px; padding: 10px; }
+
+  /* KPI tiles */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px 12px; }
+  .kpi .v { font-size: 26px; color: var(--maroon); line-height: 1.15; }
+  .kpi .l { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); margin-top: 4px; }
+
+  /* tables */
+  .tblwrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); font-weight: 400; text-align: left; }
+  th, td { padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .cartitems { font-size: 13px; color: var(--ink-2); }
+  .cartitems div { padding: 1px 0; }
+  .pill { display: inline-block; font-size: 11px; letter-spacing: .08em; border-radius: 10px; padding: 1px 9px; border: 1px solid var(--line); color: var(--ink-2); }
+  .pill.new { color: var(--terra); border-color: var(--terra); }
+  .pill.done { color: var(--good); border-color: var(--good); }
+
+  /* demand chart */
+  .chart { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; }
+  .brow { display: grid; grid-template-columns: minmax(140px, 220px) 1fr 90px; gap: 10px; align-items: center; padding: 3px 0; }
+  .brow .bl { font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brow .bv { font-size: 13px; color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+  .btrack { position: relative; height: 18px; }
+  .bfill { position: absolute; inset: 0 auto 0 0; background: var(--terra); border-radius: 0 4px 4px 0; min-width: 2px; }
+  .brow:hover .bfill { background: var(--maroon); }
+  #tip { position: fixed; z-index: 9; pointer-events: none; background: var(--ink); color: var(--cream-2); font-size: 12px; padding: 6px 10px; border-radius: 4px; display: none; max-width: 260px; }
+
+  /* runbook */
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .card h3 { font-size: 14px; color: var(--maroon); font-weight: 400; margin-bottom: 8px; letter-spacing: .04em; }
+  .card ul { padding-left: 18px; font-size: 13.5px; color: var(--ink-2); }
+  .card li { margin: 4px 0; }
+  a { color: var(--maroon); }
+  .tokrow { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+  .tokrow input { max-width: 340px; }
+  #app { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">VEDAM<small>Owner Portal</small></div>
+    <div class="who" id="who"></div>
+  </header>
+
+  <!-- ============ sign-in gate ============ -->
+  <div id="gate">
+    <div class="card">
+      <p class="muted" style="text-align:center">Sign in with an owner account to continue.</p>
+      <form id="gateForm">
+        <label>Email</label>
+        <input type="email" id="gEmail" autocomplete="username" required>
+        <label>Password</label>
+        <input type="password" id="gPw" autocomplete="current-password" required>
+        <button id="gBtn" type="submit">Enter</button>
+      </form>
+      <div class="msg" id="gMsg"></div>
+    </div>
+  </div>
+
+  <!-- ============ portal ============ -->
+  <div id="app">
+    <h2>Today<span class="sub" id="asof"></span></h2>
+    <div class="kpis" id="kpis"></div>
+
+    <h2>Demand<span class="sub">pieces sitting in customer carts right now</span></h2>
+    <div class="chart" id="demand"><p class="muted">Loading…</p></div>
+
+    <h2>Customers &amp; carts<span class="sub">accounts appear here after their first visit since 16 Jul 2026</span></h2>
+    <div class="tblwrap"><table id="custTbl">
+      <thead><tr><th>Customer</th><th>Email</th><th>First seen</th><th>Last seen</th><th>Cart</th><th class="num">Cart value</th></tr></thead>
+      <tbody><tr><td colspan="6" class="muted">Loading…</td></tr></tbody>
+    </table></div>
+
+    <h2>Inquiries &amp; reservations<span class="sub">from the contact form (Vedam Inquiries sheet)</span></h2>
+    <div class="tokrow">
+      <input type="text" id="tok" placeholder="Inquiries access token (saved on this device)">
+      <button class="ghost" id="tokBtn" type="button">Load inquiries</button>
+    </div>
+    <div class="tblwrap"><table id="inqTbl">
+      <thead><tr><th>When</th><th>From</th><th>Message</th><th>Status</th></tr></thead>
+      <tbody><tr><td colspan="4" class="muted">Enter the access token above, then Load inquiries.</td></tr></tbody>
+    </table></div>
+
+    <h2>Catalog &amp; price list</h2>
+    <div class="tblwrap"><table id="catTbl">
+      <thead><tr><th>Piece</th><th>Collection</th><th>Note</th><th class="num">Price</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+
+    <h2>Runbook — how the business runs</h2>
+    <div class="cols">
+      <div class="card">
+        <h3>Where things live</h3>
+        <ul>
+          <li><a href="https://deveshwar123.github.io/Vedam/" target="_blank" rel="noopener">Live site</a> · <a href="https://github.com/Deveshwar123/Vedam" target="_blank" rel="noopener">GitHub repo</a> (GitHub Pages, redeploys ~1&nbsp;min after push)</li>
+          <li><a href="https://console.firebase.google.com/project/vedam-4b313/authentication/users" target="_blank" rel="noopener">Firebase — customer accounts</a></li>
+          <li><a href="https://console.firebase.google.com/project/vedam-4b313/firestore/databases/-default-/data" target="_blank" rel="noopener">Firestore — carts &amp; profiles data</a></li>
+          <li><a href="https://docs.google.com/spreadsheets/d/11x96CU43jRK47MkfiLAMyAntWOTFxbeR9nHk40gzzeE" target="_blank" rel="noopener">Vedam Inquiries sheet</a> — every contact-form submission lands here</li>
+          <li><a href="https://script.google.com/home" target="_blank" rel="noopener">Apps Script</a> — deployment “Vedam Inquiries” feeds the sheet and this portal</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>How an order happens</h3>
+        <ul>
+          <li>Every piece is <b>reservation, not instant purchase</b>: a customer adds pieces to their cart (login required), then “Reserve Your Pieces” sends them to the contact form.</li>
+          <li>Their reservation arrives as a row in the <b>Inquiries</b> section above — reply by email to confirm fabric, measurements, timeline and payment.</li>
+          <li>Made-to-order pieces are non-returnable except for genuine defect or misdescription (see <a href="./policies.html" target="_blank" rel="noopener">policies</a>); one free fit alteration is included.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Weekly owner checklist</h3>
+        <ul>
+          <li>Answer new inquiries — policy promises a <b>2-working-day acknowledgement</b> and 1-month resolution for grievances.</li>
+          <li>Watch the <b>Demand</b> chart: pieces stuck in carts are your follow-up list and your restock signal.</li>
+          <li>Customers with a full cart but no inquiry row = warm leads worth a personal note.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Open items</h3>
+        <ul>
+          <li>Policies page still needs the <b>legal entity name, registered address, phone number and named grievance officer</b> (required by the E-Commerce Rules 2020) — only the email is published so far.</li>
+          <li>Policy copy should get a lawyer’s once-over before it is relied on.</li>
+          <li>Optional hardening: restrict the Firebase browser API key to <code>deveshwar123.github.io/*</code> in Google Cloud console.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="tip"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, setDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCxZ4K17JB8ZQtcF9kD-X8HOi1XKwbKFU8",
+  authDomain: "vedam-4b313.firebaseapp.com",
+  projectId: "vedam-4b313",
+  storageBucket: "vedam-4b313.firebasestorage.app",
+  messagingSenderId: "894664816324",
+  appId: "1:894664816324:web:08eeb2b56c70b6761f7b91"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+try { await setPersistence(auth, browserLocalPersistence); } catch (e) {}
+
+const INQ_URL = "https://script.google.com/macros/s/AKfycbxE592Swh68sIeCNjz4_GDbx4hDSykv4Ax966F7iC1WaRAqGoho70Td6Rr-zcRgzA7lMg/exec";
+const CATALOG = [
+  {"id":"srngara-padmaja","collection":"Śṛṅgāra · Bridal Couture","name":"The Padmaja Lehenga","note":"Zardozi and real zari on Gadwal silk.","price":68000,"page":"srngara.html"},
+  {"id":"srngara-alankara","collection":"Śṛṅgāra · Bridal Couture","name":"The Alankara Kanjivaram","note":"Temple border woven in real zari.","price":54000,"page":"srngara.html"},
+  {"id":"srngara-raagini","collection":"Śṛṅgāra · Bridal Couture","name":"The Raagini Anarkali","note":"Dabka and river pearls on raw silk.","price":46500,"page":"srngara.html"},
+  {"id":"srngara-sindoora","collection":"Śṛṅgāra · Bridal Couture","name":"The Sindoora Dupatta","note":"Tissue silk with scattered zardozi buta.","price":18500,"page":"srngara.html"},
+  {"id":"nizami-mehfil","collection":"Nizami Nights · Evening & Occasion","name":"The Mehfil Organza Saree","note":"Moonlit organza with a Deccan velvet blouse.","price":42500,"page":"nizami-nights.html"},
+  {"id":"nizami-mahtab","collection":"Nizami Nights · Evening & Occasion","name":"The Mahtab Saree","note":"Midnight chiffon with silver mukaish stars.","price":36500,"page":"nizami-nights.html"},
+  {"id":"nizami-choga","collection":"Nizami Nights · Evening & Occasion","name":"The Deccan Velvet Choga","note":"Hand-cut velvet with moon-gold cordwork.","price":38000,"page":"nizami-nights.html"},
+  {"id":"nizami-qawwali","collection":"Nizami Nights · Evening & Occasion","name":"The Qawwali Kurta Set","note":"Chanderi silk for long nights of song.","price":29000,"page":"nizami-nights.html"},
+  {"id":"manduva-aangan","collection":"Manduva · Heritage Daywear","name":"The Aangan Saree","note":"Handloom cotton-silk with a temple-red border.","price":16500,"page":"manduva.html"},
+  {"id":"manduva-verandah","collection":"Manduva · Heritage Daywear","name":"The Verandah Kurta","note":"Mangalagiri cotton with shell buttons.","price":9800,"page":"manduva.html"},
+  {"id":"manduva-tulasi","collection":"Manduva · Heritage Daywear","name":"The Tulasi Set","note":"Kurta and dupatta in leaf-soft khadi.","price":14200,"page":"manduva.html"},
+  {"id":"manduva-courtyard","collection":"Manduva · Heritage Daywear","name":"The Courtyard Dupatta","note":"Cotton-silk with a thin zari selvedge.","price":6500,"page":"manduva.html"}
+];
+const PRICE = Object.fromEntries(CATALOG.map(p => [p.id, p.price]));
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+const when = (ms) => ms ? new Date(ms).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";
+
+/* ---------- gate ---------- */
+$("gateForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const btn = $("gBtn"); btn.disabled = true; $("gMsg").textContent = "";
+  try { await signInWithEmailAndPassword(auth, $("gEmail").value.trim(), $("gPw").value); }
+  catch (e) { $("gMsg").textContent = "That email or password does not match — please try again."; }
+  btn.disabled = false;
+});
+
+onAuthStateChanged(auth, (u) => { if (u) enter(u); else leave(); });
+
+function leave() {
+  $("app").style.display = "none";
+  $("gate").style.display = "block";
+  $("who").innerHTML = "";
+}
+
+async function enter(u) {
+  // Access is decided by Firestore rules, not a client-side list: only the
+  // owner uid(s) can read the users collection. A probe read tells us which
+  // side of that line this account is on.
+  let users;
+  try { users = await getDocs(collection(db, "users")); }
+  catch (e) {
+    $("gMsg").textContent = "This account is signed in but does not have owner access.";
+    try { await signOut(auth); } catch (e2) {}
+    return;
+  }
+  $("gate").style.display = "none";
+  $("app").style.display = "block";
+  $("who").innerHTML = esc(u.email) + ' <button class="ghost" id="outBtn" type="button">Sign out</button>';
+  $("outBtn").onclick = () => signOut(auth);
+  $("asof").textContent = "as of " + new Date().toLocaleString("en-IN", { day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" });
+  render(users);
+  const savedTok = localStorage.getItem("vedamAdminToken") || "";
+  $("tok").value = savedTok;
+  if (savedTok) loadInquiries();
+}
+
+/* ---------- customers + carts + demand ---------- */
+let inqStats = { total: null, week: null, open: null };
+
+async function render(usersSnap) {
+  const users = {};
+  usersSnap.forEach((d) => { users[d.id] = d.data(); });
+
+  let carts = {};
+  try {
+    const cs = await getDocs(collection(db, "carts"));
+    cs.forEach((d) => { carts[d.id] = d.data(); });
+  } catch (e) { console.warn("carts read failed", e); }
+
+  // catalog table
+  $("catTbl").tBodies[0].innerHTML = CATALOG.map((p) =>
+    `<tr><td>${esc(p.name)}</td><td>${esc(p.collection)}</td><td class="muted">${esc(p.note)}</td><td class="num">${inr(p.price)}</td></tr>`).join("");
+
+  // customers table
+  const uids = new Set([...Object.keys(users), ...Object.keys(carts)]);
+  const rows = [...uids].map((uid) => {
+    const p = users[uid] || {};
+    const items = (carts[uid] && Array.isArray(carts[uid].items)) ? carts[uid].items : [];
+    const value = items.reduce((s, it) => s + (it.price || PRICE[it.id] || 0) * (it.qty || 1), 0);
+    const count = items.reduce((s, it) => s + (it.qty || 1), 0);
+    return { uid, p, items, value, count };
+  }).sort((a, b) => (b.p.lastSeen || 0) - (a.p.lastSeen || 0));
+
+  $("custTbl").tBodies[0].innerHTML = rows.length ? rows.map((r) => `<tr>
+      <td>${esc(r.p.name || "—")}</td>
+      <td>${esc(r.p.email || r.uid.slice(0, 10) + "…")}</td>
+      <td>${when(r.p.created)}</td>
+      <td>${when(r.p.lastSeen)}</td>
+      <td class="cartitems">${r.items.length ? r.items.map((it) => `<div>${esc(it.name || it.id)}${(it.qty || 1) > 1 ? " × " + it.qty : ""}</div>`).join("") : '<span class="muted">empty</span>'}</td>
+      <td class="num">${r.count ? inr(r.value) : "—"}</td>
+    </tr>`).join("")
+    : '<tr><td colspan="6" class="muted">No customer accounts yet.</td></tr>';
+
+  // demand chart: qty of each piece across all carts
+  const demand = {};
+  Object.values(carts).forEach((c) => (c.items || []).forEach((it) => {
+    const k = it.id || it.name;
+    demand[k] = demand[k] || { name: it.name || it.id, n: 0, v: 0 };
+    demand[k].n += it.qty || 1;
+    demand[k].v += (it.price || PRICE[it.id] || 0) * (it.qty || 1);
+  }));
+  const dl = Object.values(demand).sort((a, b) => b.n - a.n);
+  if (!dl.length) {
+    $("demand").innerHTML = '<p class="muted">No pieces in any cart yet — this fills in as customers add to cart.</p>';
+  } else {
+    const max = dl[0].n;
+    $("demand").innerHTML = dl.map((d, i) => `<div class="brow" data-tip="${esc(d.name)} — ${d.n} in carts, ${inr(d.v)} reserve value">
+        <div class="bl">${esc(d.name)}</div>
+        <div class="btrack"><div class="bfill" style="width:${(d.n / max * 100).toFixed(1)}%"></div></div>
+        <div class="bv">${d.n} · ${inr(d.v)}</div>
+      </div>`).join("");
+  }
+
+  // KPIs
+  const withItems = rows.filter((r) => r.count > 0);
+  const totalValue = rows.reduce((s, r) => s + r.value, 0);
+  const totalItems = rows.reduce((s, r) => s + r.count, 0);
+  drawKpis({
+    customers: uids.size, carts: withItems.length,
+    pieces: totalItems, value: totalValue
+  });
+}
+
+function drawKpis(d) {
+  const t = (v, l) => `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  $("kpis").innerHTML =
+    t(d.customers, "customer accounts") +
+    t(d.carts, "carts with pieces") +
+    t(d.pieces, "pieces reserved in carts") +
+    t(inr(d.value), "value sitting in carts") +
+    t(inqStats.week == null ? "—" : inqStats.week, "inquiries, last 7 days") +
+    t(inqStats.open == null ? "—" : inqStats.open, "inquiries awaiting reply");
+  drawKpis.last = d;
+}
+
+/* ---------- inquiries (Apps Script -> sheet) ---------- */
+$("tokBtn").addEventListener("click", loadInquiries);
+
+// A row's identity for the handled-flag: stable hash of its content.
+function rowKey(r) {
+  const s = JSON.stringify(r);
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+  return "inq" + h.toString(36);
+}
+
+async function loadInquiries() {
+  const tok = $("tok").value.trim();
+  if (!tok) return;
+  localStorage.setItem("vedamAdminToken", tok);
+  const tb = $("inqTbl").tBodies[0];
+  tb.innerHTML = '<tr><td colspan="4" class="muted">Loading…</td></tr>';
+  let rows;
+  try {
+    const res = await fetch(INQ_URL + "?token=" + encodeURIComponent(tok));
+    const j = JSON.parse(await res.text());
+    if (j.error) throw new Error(j.error);
+    rows = j.rows || [];
+  } catch (e) {
+    tb.innerHTML = '<tr><td colspan="4" class="muted">Could not load inquiries — check the token. (' + esc(e.message) + ")</td></tr>";
+    return;
+  }
+
+  let done = {};
+  try {
+    const ds = await getDocs(collection(db, "inquiryStatus"));
+    ds.forEach((d) => { if (d.data().done) done[d.id] = true; });
+  } catch (e) {}
+
+  const weekAgo = Date.now() - 7 * 864e5;
+  const dateOf = (r) => { const v = r.Timestamp || r.timestamp || r.When || r.Date || ""; const t = Date.parse(v); return isNaN(t) ? 0 : t; };
+  rows.sort((a, b) => dateOf(b) - dateOf(a));
+  inqStats.total = rows.length;
+  inqStats.week = rows.filter((r) => dateOf(r) >= weekAgo).length;
+  inqStats.open = rows.filter((r) => !done[rowKey(r)]).length;
+  if (drawKpis.last) drawKpis(drawKpis.last);
+
+  const skip = /^(timestamp|when|date|name|email)$/i;
+  tb.innerHTML = rows.length ? rows.map((r) => {
+    const key = rowKey(r);
+    const t = dateOf(r);
+    const rest = Object.entries(r).filter(([k, v]) => !skip.test(k) && String(v).trim() !== "")
+      .map(([k, v]) => `<div><span class="muted">${esc(k)}:</span> ${esc(v)}</div>`).join("");
+    return `<tr>
+      <td style="white-space:nowrap">${t ? new Date(t).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "—"}</td>
+      <td>${esc(r.Name || r.name || "—")}<div class="muted">${esc(r.Email || r.email || "")}</div></td>
+      <td class="cartitems">${rest || '<span class="muted">—</span>'}</td>
+      <td><button class="ghost" data-key="${key}" data-done="${done[key] ? 1 : 0}" type="button">${done[key] ? "Handled ✓" : "Mark handled"}</button></td>
+    </tr>`;
+  }).join("") : '<tr><td colspan="4" class="muted">No inquiries yet.</td></tr>';
+
+  tb.querySelectorAll("button[data-key]").forEach((b) => b.addEventListener("click", async () => {
+    const now = b.dataset.done !== "1";
+    b.disabled = true;
+    try {
+      await setDoc(doc(db, "inquiryStatus", b.dataset.key), { done: now, ts: Date.now() });
+      b.dataset.done = now ? "1" : "0";
+      b.textContent = now ? "Handled ✓" : "Mark handled";
+      inqStats.open += now ? -1 : 1;
+      if (drawKpis.last) drawKpis(drawKpis.last);
+    } catch (e) { alert("Could not save: " + e.message); }
+    b.disabled = false;
+  }));
+}
+
+/* ---------- chart tooltip ---------- */
+const tip = $("tip");
+document.addEventListener("mousemove", (e) => {
+  const row = e.target.closest ? e.target.closest(".brow[data-tip]") : null;
+  if (!row) { tip.style.display = "none"; return; }
+  tip.textContent = row.dataset.tip;
+  tip.style.display = "block";
+  tip.style.left = Math.min(e.clientX + 14, innerWidth - 280) + "px";
+  tip.style.top = (e.clientY + 16) + "px";
+});
+</script>
+</body>
+</html>
