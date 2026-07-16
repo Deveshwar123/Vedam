@@ -100,8 +100,8 @@
     <div class="card">
       <p class="muted" style="text-align:center">Sign in with an owner account to continue.</p>
       <form id="gateForm">
-        <label>Email</label>
-        <input type="email" id="gEmail" autocomplete="username" required>
+        <label>Email or username</label>
+        <input type="text" id="gEmail" autocomplete="username" required>
         <label>Password</label>
         <input type="password" id="gPw" autocomplete="current-password" required>
         <button id="gBtn" type="submit">Enter</button>
@@ -124,11 +124,13 @@
       <tbody><tr><td colspan="6" class="muted">Loading…</td></tr></tbody>
     </table></div>
 
-    <h2>Inquiries &amp; reservations<span class="sub">from the contact form (Vedam Inquiries sheet)</span></h2>
+    <h2>Inquiries &amp; reservations<span class="sub">from the contact form — <a href="https://docs.google.com/spreadsheets/d/11x96CU43jRK47MkfiLAMyAntWOTFxbeR9nHk40gzzeE/edit?gid=0#gid=0" target="_blank" rel="noopener">open the Vedam Inquiries sheet ↗</a></span></h2>
     <div class="tokrow">
       <input type="text" id="tok" placeholder="Inquiries access token (saved on this device)">
       <button class="ghost" id="tokBtn" type="button">Load inquiries</button>
+      <button class="ghost" id="sheetBtn" type="button">Show sheet</button>
     </div>
+    <div id="sheetBox" style="display:none; margin-bottom:12px; background:var(--card); border:1px solid var(--line); border-radius:6px; overflow:hidden"></div>
     <div class="tblwrap"><table id="inqTbl">
       <thead><tr><th>When</th><th>From</th><th>Message</th><th>Status</th></tr></thead>
       <tbody><tr><td colspan="4" class="muted">Enter the access token above, then Load inquiries.</td></tr></tbody>
@@ -148,7 +150,7 @@
           <li><a href="https://deveshwar123.github.io/Vedam/" target="_blank" rel="noopener">Live site</a> · <a href="https://github.com/Deveshwar123/Vedam" target="_blank" rel="noopener">GitHub repo</a> (GitHub Pages, redeploys ~1&nbsp;min after push)</li>
           <li><a href="https://console.firebase.google.com/project/vedam-4b313/authentication/users" target="_blank" rel="noopener">Firebase — customer accounts</a></li>
           <li><a href="https://console.firebase.google.com/project/vedam-4b313/firestore/databases/-default-/data" target="_blank" rel="noopener">Firestore — carts &amp; profiles data</a></li>
-          <li><a href="https://docs.google.com/spreadsheets/d/11x96CU43jRK47MkfiLAMyAntWOTFxbeR9nHk40gzzeE" target="_blank" rel="noopener">Vedam Inquiries sheet</a> — every contact-form submission lands here</li>
+          <li><a href="https://docs.google.com/spreadsheets/d/11x96CU43jRK47MkfiLAMyAntWOTFxbeR9nHk40gzzeE/edit?gid=0#gid=0" target="_blank" rel="noopener">Vedam Inquiries sheet</a> — every contact-form submission lands here</li>
           <li><a href="https://script.google.com/home" target="_blank" rel="noopener">Apps Script</a> — deployment “Vedam Inquiries” feeds the sheet and this portal</li>
         </ul>
       </div>
@@ -227,7 +229,11 @@ const when = (ms) => ms ? new Date(ms).toLocaleDateString("en-IN", { day: "numer
 $("gateForm").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   const btn = $("gBtn"); btn.disabled = true; $("gMsg").textContent = "";
-  try { await signInWithEmailAndPassword(auth, $("gEmail").value.trim(), $("gPw").value); }
+  // A bare username (no @) maps to its owner-account email — Firebase auth
+  // only knows emails, so "Owner" signs in as owner@vedam-4b313.firebaseapp.com.
+  let id = $("gEmail").value.trim();
+  if (!id.includes("@")) id = id.toLowerCase() + "@vedam-4b313.firebaseapp.com";
+  try { await signInWithEmailAndPassword(auth, id, $("gPw").value); }
   catch (e) { $("gMsg").textContent = "That email or password does not match — please try again."; }
   btn.disabled = false;
 });
@@ -344,6 +350,22 @@ function drawKpis(d) {
 /* ---------- inquiries (Apps Script -> sheet) ---------- */
 $("tokBtn").addEventListener("click", loadInquiries);
 
+// Live embed of the Vedam Inquiries sheet — renders when this browser is
+// signed into the Google account that owns it; the iframe loads on first open.
+$("sheetBtn").addEventListener("click", () => {
+  const box = $("sheetBox");
+  const open = box.style.display !== "none";
+  if (!open && !box.firstChild) {
+    const f = document.createElement("iframe");
+    f.src = "https://docs.google.com/spreadsheets/d/11x96CU43jRK47MkfiLAMyAntWOTFxbeR9nHk40gzzeE/edit?widget=true&headers=false&gid=0";
+    f.style.cssText = "width:100%;height:480px;border:0;display:block";
+    f.title = "Vedam Inquiries sheet";
+    box.appendChild(f);
+  }
+  box.style.display = open ? "none" : "block";
+  $("sheetBtn").textContent = open ? "Show sheet" : "Hide sheet";
+});
+
 // A row's identity for the handled-flag: stable hash of its content.
 function rowKey(r) {
   const s = JSON.stringify(r);
@@ -383,7 +405,7 @@ async function loadInquiries() {
   inqStats.open = rows.filter((r) => !done[rowKey(r)]).length;
   if (drawKpis.last) drawKpis(drawKpis.last);
 
-  const skip = /^(timestamp|when|date|name|email)$/i;
+  const skip = /^(timestamp|when|date|full name|name|email)$/i;
   tb.innerHTML = rows.length ? rows.map((r) => {
     const key = rowKey(r);
     const t = dateOf(r);
@@ -391,7 +413,7 @@ async function loadInquiries() {
       .map(([k, v]) => `<div><span class="muted">${esc(k)}:</span> ${esc(v)}</div>`).join("");
     return `<tr>
       <td style="white-space:nowrap">${t ? new Date(t).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "—"}</td>
-      <td>${esc(r.Name || r.name || "—")}<div class="muted">${esc(r.Email || r.email || "")}</div></td>
+      <td>${esc(r["Full Name"] || r.Name || r.name || "—")}<div class="muted">${esc(r.Email || r.email || "")}</div></td>
       <td class="cartitems">${rest || '<span class="muted">—</span>'}</td>
       <td><button class="ghost" data-key="${key}" data-done="${done[key] ? 1 : 0}" type="button">${done[key] ? "Handled ✓" : "Mark handled"}</button></td>
     </tr>`;
