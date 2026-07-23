@@ -16,7 +16,7 @@ Status: `OPEN` · `IN PROGRESS` · `CLOSED`
 | **Closed** | 2026-07-23 |
 | **Reported by** | Deveshwar |
 | **Severity** | Medium — a signed-in visitor with a full cart is told their cart is empty |
-| **Fixed in** | `c8b8087` |
+| **Fixed in** | `f336390` |
 | **Pages** | cart.html |
 
 **Steps to reproduce**
