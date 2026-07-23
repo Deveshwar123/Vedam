@@ -7,6 +7,57 @@ Status: `OPEN` · `IN PROGRESS` · `CLOSED`
 
 ---
 
+## VEDAM-2 — Cart says "Your cart is empty" while it is still loading
+
+| | |
+|---|---|
+| **Status** | CLOSED |
+| **Opened** | 2026-07-23 |
+| **Closed** | 2026-07-23 |
+| **Reported by** | Deveshwar |
+| **Severity** | Medium — a signed-in visitor with a full cart is told their cart is empty |
+| **Fixed in** | `c8b8087` |
+| **Pages** | cart.html |
+
+**Steps to reproduce**
+1. Sign in and add pieces to the cart.
+2. Open `cart.html` in a browser with no local cart cache (new device, cleared
+   storage, or a hard reload).
+
+**Expected:** an indication that the cart is being fetched.
+**Actual:** *"Your cart is empty — no treasures yet"* for as long as Firebase
+takes to answer (0.5–2.0s live), then the real cart pops in.
+
+**Root cause**
+
+The component only had two states: `hasItems` and `isEmpty`, both derived from
+`items.length`. Firebase loads from gstatic and resolves the signed-in user
+*after* the component mounts, so `items` is `[]` on first render for anyone
+without a cached cart — and `[]` was read as "empty cart" rather than "not
+fetched yet".
+
+**Fix**
+
+- Added `state.resolved`, set true when the `vedam-cart` event arrives or when
+  `vedamFB.ready` settles, with an 8s ceiling so a gstatic outage falls through
+  to the empty-cart message instead of spinning forever.
+- New `isLoading` branch renders the house's loading mark — the same gold
+  diamond divider and three pulsing dots the page splash uses on every page —
+  above the words *Gathering your pieces*.
+- `isEmpty` is now `!isLoading && items.length === 0`.
+- A cached cart still renders instantly; the dots only appear when there is
+  nothing to draw yet, so returning visitors see no spinner flash.
+
+**Verification** (local server, Chrome)
+
+| | before | after |
+|---|---|---|
+| Load with no cache, Firebase pending | "Your cart is empty" | dots + "Gathering your pieces" |
+| Firebase never answers (module forced to throw) | "Your cart is empty" immediately | dots for 8s, then "Your cart is empty" |
+| Load with cached items | items | items, no spinner flash |
+
+---
+
 ## VEDAM-1 — Sign-in fails right after sign-out: "Still connecting to the house"
 
 | | |
