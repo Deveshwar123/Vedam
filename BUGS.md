@@ -141,14 +141,19 @@ brand, so they are left as follow-ups rather than guessed at.
 
 | | |
 |---|---|
-| **Status** | OPEN |
+| **Status** | IN PROGRESS |
 | **Opened** | 2026-08-09 |
 | **Reported by** | UX review |
 | **Severity** | Medium — signed-out "Reserve Your Pieces" redirects to login with no return path |
-| **Pages** | login.html, cart.html |
+| **Fixed in** | `002ab4b` |
+| **Pages** | all 11 bundled pages (interceptor) + login.html (redirect) |
 
-After signing in, the visitor lands on `login.html` rather than back at the
-cart/contact step. Needs a `?return=` round-trip.
+The reserve interceptor now appends `?return=<dest>` (default
+`contact-us.html`), and the login component redirects there on successful
+sign-in. The return value is validated against a whitelist of same-site page
+filenames — no open-redirect. Every touched module was `node --check`'d and
+headless-render confirmed. Closes once a live sign-in round-trip is confirmed
+to land on the reservation step.
 
 ---
 
