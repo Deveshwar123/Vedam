@@ -1,0 +1,66 @@
+rules_version = '2';
+
+// Vedam — Firestore security rules
+// ---------------------------------------------------------------------------
+// These rules are the ENTIRE access-control model for the site. admin.html
+// decides "is this an owner?" purely by whether a read of the `users`
+// collection succeeds — so the rules below are what actually keeps one
+// customer from reading another customer's cart or profile.
+//
+// DEPLOY:
+//   Firebase console → Firestore Database → Rules → paste this → Publish.
+//   (Or: firebase deploy --only firestore:rules with this file.)
+//   Test first in the console's Rules Playground — see SECURITY.md.
+//
+// BEFORE DEPLOYING: replace REPLACE_WITH_OWNER_UID with the owner account's
+// Auth UID (Firebase console → Authentication → Users → copy the owner's
+// "User UID"). Add more UIDs to the list to grant additional owners.
+// ---------------------------------------------------------------------------
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner() {
+      return request.auth != null
+        && request.auth.uid in ['REPLACE_WITH_OWNER_UID'];
+    }
+
+    function isSelf(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Customer profiles (written by login.html upsertProfile).
+    // A customer may read/write only their own doc; owners read the whole
+    // collection so the portal can list accounts.
+    match /users/{uid} {
+      allow get:            if isSelf(uid) || isOwner();
+      allow list:           if isOwner();
+      allow create, update: if isSelf(uid)
+                            && request.resource.data.keys()
+                                 .hasOnly(['email', 'name', 'lastSeen', 'created']);
+      allow delete:         if false;
+    }
+
+    // Carts (written by login.html saveCart / cart seed + resync).
+    // A customer may read/write only their own cart; owners read all carts
+    // for the demand chart and customer table.
+    match /carts/{uid} {
+      allow get:            if isSelf(uid) || isOwner();
+      allow list:           if isOwner();
+      allow create, update: if isSelf(uid)
+                            && request.resource.data.keys()
+                                 .hasOnly(['items', 'updated']);
+      allow delete:         if isSelf(uid);
+    }
+
+    // Inquiry handled-flags (written by admin.html "Mark handled"). Owner only.
+    match /inquiryStatus/{key} {
+      allow read, write: if isOwner();
+    }
+
+    // Deny everything not matched above.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

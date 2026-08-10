@@ -7,6 +7,151 @@ Status: `OPEN` · `IN PROGRESS` · `CLOSED`
 
 ---
 
+## VEDAM-3 — Firestore rules are the entire access-control model (unverified)
+
+| | |
+|---|---|
+| **Status** | IN PROGRESS |
+| **Opened** | 2026-08-09 |
+| **Reported by** | Security review |
+| **Severity** | Critical — a permissive rule set lets any signed-in customer read every other customer's cart and profile |
+| **Pages** | admin.html, login.html (Firestore) |
+
+`admin.html` decides owner access solely by whether a read of the `users`
+collection succeeds. The deployed rules are not in the repo and could not be
+verified. Locked-down rules are now provided in `firestore.rules`; they still
+need the owner UID filled in and must be **published in the Firebase console**
+(see `SECURITY.md` S1). Closes when the rules are published and verified in the
+Rules Playground.
+
+---
+
+## VEDAM-4 — Book-a-fitting form is dead (placeholder endpoint)
+
+| | |
+|---|---|
+| **Status** | OPEN |
+| **Opened** | 2026-08-09 |
+| **Reported by** | Security review |
+| **Severity** | High — the primary CTA on book-a-fitting.html does nothing |
+| **Pages** | book-a-fitting.html |
+
+The form still posts to the literal string `PASTE_FITTING_SHEET_WEB_APP_URL`
+(both occurrences). Needs a real Apps Script Web App deployment URL. Blocked on
+the owner creating/providing that deployment (`fittings-apps-script.gs` is the
+server side and is ready to deploy).
+
+---
+
+## VEDAM-5 — Inquiry access token is passed in the URL
+
+| | |
+|---|---|
+| **Status** | OPEN |
+| **Opened** | 2026-08-09 |
+| **Reported by** | Security review |
+| **Severity** | Medium — token leaks via Referer, history, and Apps Script logs |
+| **Pages** | admin.html + Apps Script `doGet` (not in repo) |
+
+`fetch(INQ_URL + "?token=" + token)`. Move the token to a header or POST body,
+rotate it. See `SECURITY.md` S2.
+
+---
+
+## VEDAM-6 — Book-a-fitting endpoint open to anyone, no anti-abuse
+
+| | |
+|---|---|
+| **Status** | OPEN |
+| **Opened** | 2026-08-09 |
+| **Reported by** | Security review |
+| **Severity** | Medium — open spam funnel into the Sheet |
+| **Pages** | fittings-apps-script.gs |
+
+`doPost` accepts any request with no shared secret, honeypot, or rate limit.
+See `SECURITY.md` S3.
+
+---
+
+## VEDAM-7 — No email verification on signup
+
+| | |
+|---|---|
+| **Status** | OPEN |
+| **Opened** | 2026-08-09 |
+| **Reported by** | Security review |
+| **Severity** | Medium — anyone can register under any email |
+| **Pages** | login.html |
+
+`createUserWithEmailAndPassword` with no `sendEmailVerification`. See
+`SECURITY.md` S4.
+
+---
+
+## VEDAM-8 — Firebase browser API key is unrestricted
+
+| | |
+|---|---|
+| **Status** | OPEN |
+| **Opened** | 2026-08-09 |
+| **Reported by** | Security review |
+| **Severity** | Low — key/quota abuse from other origins |
+| **Pages** | all (Firebase config) |
+
+Restrict the key to `deveshwar123.github.io/*` (HTTP-referrer restriction) in
+the Google Cloud console. See `SECURITY.md` S5.
+
+---
+
+## VEDAM-9 — Accessibility gaps: alt text, contrast, ARIA (HIG polish)
+
+| | |
+|---|---|
+| **Status** | IN PROGRESS |
+| **Opened** | 2026-08-09 |
+| **Reported by** | UI/UX (Apple HIG) review |
+| **Severity** | Medium — product imagery invisible to screen readers/SEO; gold-on-cream likely fails 4.5:1 |
+| **Pages** | srngara.html, nizami-nights.html, manduva.html, collections.html, and others |
+
+Product pieces render as CSS/base64 backgrounds with no text alternative;
+several controls lack labels; the splash/pulsing-dots animation has no
+`prefers-reduced-motion` guard; some touch targets fall under 44px. Applying
+the transferable Apple HIG principles: 8pt spacing rhythm, tightened Georgia
+type hierarchy, 44px minimum targets, 4.5:1 contrast, and reduce-motion
+support — without changing the house's serif/maroon/gold identity.
+
+---
+
+## VEDAM-10 — Reserve flow loses context after login
+
+| | |
+|---|---|
+| **Status** | OPEN |
+| **Opened** | 2026-08-09 |
+| **Reported by** | UX review |
+| **Severity** | Medium — signed-out "Reserve Your Pieces" redirects to login with no return path |
+| **Pages** | login.html, cart.html |
+
+After signing in, the visitor lands on `login.html` rather than back at the
+cart/contact step. Needs a `?return=` round-trip.
+
+---
+
+## VEDAM-11 — Policies page legally incomplete
+
+| | |
+|---|---|
+| **Status** | OPEN |
+| **Opened** | 2026-08-09 |
+| **Reported by** | Review (owner runbook) |
+| **Severity** | Low — India E-Commerce Rules 2020 compliance |
+| **Pages** | policies.html |
+
+Missing legal entity name, registered address, phone, and named grievance
+officer; only the email is published. Needs a lawyer's once-over.
+
+---
+
 ## VEDAM-2 — Cart says "Your cart is empty" while it is still loading
 
 | | |
