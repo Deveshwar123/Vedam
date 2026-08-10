@@ -15,6 +15,7 @@ Status: `OPEN` · `IN PROGRESS` · `CLOSED`
 | **Opened** | 2026-08-09 |
 | **Reported by** | Security review |
 | **Severity** | Critical — a permissive rule set lets any signed-in customer read every other customer's cart and profile |
+| **Rules in** | `880c638` (`firestore.rules`) |
 | **Pages** | admin.html, login.html (Firestore) |
 
 `admin.html` decides owner access solely by whether a read of the `users`
@@ -77,14 +78,19 @@ See `SECURITY.md` S3.
 
 | | |
 |---|---|
-| **Status** | OPEN |
+| **Status** | IN PROGRESS |
 | **Opened** | 2026-08-09 |
 | **Reported by** | Security review |
 | **Severity** | Medium — anyone can register under any email |
+| **Fixed in** | `0b2ab78` (code) |
 | **Pages** | login.html |
 
-`createUserWithEmailAndPassword` with no `sendEmailVerification`. See
-`SECURITY.md` S4.
+`createUserWithEmailAndPassword` with no `sendEmailVerification`. Fixed in code:
+`signUp` now calls `sendEmailVerification(cred.user)` (best-effort, does not
+block signup). Closes once a real signup is confirmed to receive the email;
+gating reservation on a verified email is optional future hardening (do not add
+`email_verified` to the Firestore rules until existing accounts are migrated).
+See `SECURITY.md` S4.
 
 ---
 
@@ -111,14 +117,23 @@ the Google Cloud console. See `SECURITY.md` S5.
 | **Opened** | 2026-08-09 |
 | **Reported by** | UI/UX (Apple HIG) review |
 | **Severity** | Medium — product imagery invisible to screen readers/SEO; gold-on-cream likely fails 4.5:1 |
+| **Partly fixed in** | `0b2ab78` |
 | **Pages** | srngara.html, nizami-nights.html, manduva.html, collections.html, and others |
 
 Product pieces render as CSS/base64 backgrounds with no text alternative;
 several controls lack labels; the splash/pulsing-dots animation has no
-`prefers-reduced-motion` guard; some touch targets fall under 44px. Applying
-the transferable Apple HIG principles: 8pt spacing rhythm, tightened Georgia
-type hierarchy, 44px minimum targets, 4.5:1 contrast, and reduce-motion
-support — without changing the house's serif/maroon/gold identity.
+`prefers-reduced-motion` guard; some touch targets fall under 44px.
+
+**Done (`0b2ab78`):** `prefers-reduced-motion` guard, 44px minimum touch
+targets, and visible `:focus-visible` outlines on all 11 bundled pages
+(additive `#hig-overrides` block); on `admin.html` also WCAG-passing text
+colors, `scope="col"`, and aria-labels. All verified via headless-render.
+
+**Remaining (needs design judgment / real copy):** author real text
+alternatives for each product piece on the bundled pages, a full 4.5:1 contrast
+pass on the customer-facing palette, and the 8pt spacing / Georgia type-scale
+tightening. These edit the bundled template markup and want a human eye on the
+brand, so they are left as follow-ups rather than guessed at.
 
 ---
 
