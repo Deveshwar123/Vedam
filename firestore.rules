@@ -2,6 +2,13 @@ rules_version = '2';
 
 // Vedam — Firestore security rules
 // ---------------------------------------------------------------------------
+// NOTE (verified 2026-08-10): the LIVE deployed rules are already correctly
+// locked down (owner-scoped read/write, owner-only inquiryStatus, isOwner
+// pinned by uid). See VEDAM-3 in BUGS.md / S1 in SECURITY.md. This file is an
+// EQUIVALENT REFERENCE that adds one optional hardening the live rules lack:
+// hasOnly(...) to restrict which fields a shopper may write to their own doc.
+// Adopting it is optional — the live rules are secure without it.
+//
 // These rules are the ENTIRE access-control model for the site. admin.html
 // decides "is this an owner?" purely by whether a read of the `users`
 // collection succeeds — so the rules below are what actually keeps one
