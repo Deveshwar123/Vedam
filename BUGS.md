@@ -127,13 +127,23 @@ several controls lack labels; the splash/pulsing-dots animation has no
 **Done (`0b2ab78`):** `prefers-reduced-motion` guard, 44px minimum touch
 targets, and visible `:focus-visible` outlines on all 11 bundled pages
 (additive `#hig-overrides` block); on `admin.html` also WCAG-passing text
-colors, `scope="col"`, and aria-labels. All verified via headless-render.
+colors, `scope="col"`, and aria-labels.
 
-**Remaining (needs design judgment / real copy):** author real text
-alternatives for each product piece on the bundled pages, a full 4.5:1 contrast
-pass on the customer-facing palette, and the 8pt spacing / Georgia type-scale
-tightening. These edit the bundled template markup and want a human eye on the
-brand, so they are left as follow-ups rather than guessed at.
+**Done (`42e99dd`):** a full read-only WCAG audit of all 12 pages (foreground
+resolved through `rgba` alpha onto real backgrounds, ratios computed). The only
+real contrast failures were 10 semi-transparent maroon micro-labels
+(`rgba(74,15,20,.5/.55/.6)`, ~3.1–4.2:1) on cream cards across book-a-fitting,
+contact-us, login, cart, policies — now opaque `#6B4A41` (6.72:1). Cart's ± / −
+quantity buttons were 32px wide → `min-width:44px`. Audit confirmed everything
+else passes: the customer palette is a dark theme (gold/cream on maroon,
+≥5.7:1), golds on cream are borders/fills, all `<img>` have alt, all form
+inputs are `<label>`-wrapped. All verified via headless-render.
+
+**Remaining (needs design judgment / real copy):** the transient "Click to
+enter" splash prompt (4.15:1 on a moving gradient — raising its alpha touches
+the fade aesthetic); optional per-piece text alternatives for the product
+`<image-slot>` renders (the adjacent visible piece name already satisfies the
+minimum); and the 8pt spacing / Georgia type-scale tightening.
 
 ---
 
