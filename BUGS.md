@@ -46,16 +46,28 @@ the real owner UIDs to a public repo.
 
 | | |
 |---|---|
-| **Status** | OPEN |
+| **Status** | IN PROGRESS (live) |
 | **Opened** | 2026-08-09 |
 | **Reported by** | Security review |
-| **Severity** | High — the primary CTA on book-a-fitting.html does nothing |
-| **Pages** | book-a-fitting.html |
+| **Severity** | High — the primary CTA on book-a-fitting.html did nothing |
+| **Fixed in** | PR #2 (`improve/security-and-hig`) |
+| **Pages** | book-a-fitting.html, fittings-apps-script.gs |
 
-The form still posts to the literal string `PASTE_FITTING_SHEET_WEB_APP_URL`
-(both occurrences). Needs a real Apps Script Web App deployment URL. Blocked on
-the owner creating/providing that deployment (`fittings-apps-script.gs` is the
-server side and is ready to deploy).
+The form posted to the literal `PASTE_FITTING_SHEET_WEB_APP_URL`, so nothing was
+sent. Now **live**: it posts to the existing "Vedam Inquiries" Apps Script
+endpoint (the same one contact-us.html uses), so fitting requests land in the
+inquiries sheet and surface in the owner portal. The fitting details are packed
+into `subject` (`Fitting request — …`) and a formatted `message`, so they are
+captured regardless of that endpoint's column schema.
+
+Added a **Fitting Type** choice — *In-person fitting* vs *Ship to me — remote
+fitting* — plus a **Shipping Address** field, required when shipping is chosen
+(client-side validation). `fittings-apps-script.gs` was updated with matching
+`Fitting Type` / `Shipping Address` columns for the day a **dedicated** fitting
+sheet is deployed; to switch to it, deploy that script and set the form's
+`sheetWebAppUrl` prop to the new `/exec` URL. Renders + module syntax verified
+(headless + real Chrome). End-to-end send not yet exercised (would write a live
+row) — recommend one test submission to confirm.
 
 ---
 
