@@ -11,7 +11,7 @@
 //
 // This is intentionally a SEPARATE sheet + deployment from the Contact Us form.
 
-var HEADERS = ['Timestamp', 'Name', 'Email', 'Phone', 'Fitting Type', 'Collection', 'Preferred Date', 'Preferred Time', 'Shipping Address', 'Notes'];
+var HEADERS = ['Timestamp', 'Name', 'Email', 'Phone', 'Fitting Type', 'Collection', 'Preferred Date', 'Preferred Time', 'Shipping Address', 'Deposit Ack', 'Notes'];
 
 function doPost(e) {
   var lock = LockService.getScriptLock();
@@ -34,6 +34,7 @@ function doPost(e) {
       clip(p.date, 20),
       clip(p.time, 20),
       clip(p.address, 400),
+      clip(p.depositAck, 10),
       clip(p.notes, 4000)
     ]);
     return ContentService.createTextOutput(JSON.stringify({ ok: true }))

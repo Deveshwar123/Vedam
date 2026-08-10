@@ -62,12 +62,30 @@ captured regardless of that endpoint's column schema.
 
 Added a **Fitting Type** choice — *In-person fitting* vs *Ship to me — remote
 fitting* — plus a **Shipping Address** field, required when shipping is chosen
-(client-side validation). `fittings-apps-script.gs` was updated with matching
-`Fitting Type` / `Shipping Address` columns for the day a **dedicated** fitting
+(client-side validation).
+
+**Deposit gate for shipped fittings:** because a piece leaves the house for a
+home fitting, choosing *Ship to me* now requires a **refundable deposit**. The
+form shows a deposit notice + acknowledgment checkbox; submission is blocked
+until it is ticked, and the request records `depositAck: Yes` plus a
+`Deposit acknowledged: Yes` line in the message. No card processing is built —
+the owner collects the deposit during the confirmation email, consistent with
+the reservation model. (An earlier attempt to reveal the notice only on
+shipping was removed: the custom runtime didn't re-show it reliably, which would
+have trapped shoppers behind a hidden-but-required box — so the notice is always
+visible and the requirement is enforced only for shipping.)
+
+Verified in real Chrome: deposit box visible; a shipping submission is **blocked
+when unticked** and **allowed when ticked**; the posted payload carries
+`fittingType`, `address`, `depositAck: Yes`, a `Fitting request — …` subject and
+a formatted `message` (all confirmed with the live endpoint stubbed — no real
+row written).
+
+`fittings-apps-script.gs` was updated with matching `Fitting Type` /
+`Shipping Address` / `Deposit Ack` columns for the day a **dedicated** fitting
 sheet is deployed; to switch to it, deploy that script and set the form's
-`sheetWebAppUrl` prop to the new `/exec` URL. Renders + module syntax verified
-(headless + real Chrome). End-to-end send not yet exercised (would write a live
-row) — recommend one test submission to confirm.
+`sheetWebAppUrl` prop to the new `/exec` URL. Real end-to-end send not yet
+exercised (would write a live row) — recommend one test submission to confirm.
 
 ---
 
