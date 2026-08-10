@@ -9,19 +9,23 @@ Apps Script) — they are not code in this repo and cannot be fixed by a commit.
 ## S1 — Firestore rules are the whole access-control model **[owner action]**
 
 `admin.html` grants owner access purely by whether reading the `users`
-collection succeeds. If the deployed Firestore rules are permissive, any
-signed-in customer can read every other customer's `users` profile and `carts`
-document, and could write outside their own `uid`.
+collection succeeds, so everything rests on the Firestore rules — which are not
+in the repo and so could not be verified from code alone.
 
-**Fix:** deploy [`firestore.rules`](./firestore.rules).
-1. Get the owner UID: Firebase console → Authentication → Users → copy the
-   owner account's **User UID**.
-2. Paste it into `firestore.rules` (replace `REPLACE_WITH_OWNER_UID`).
-3. Firebase console → Firestore → Rules → paste the file → **Publish**.
-4. Verify in the **Rules Playground**:
-   - as customer A, `get /carts/{A}` → allow; `get /carts/{B}` → deny;
-     `list /carts` → deny.
-   - as owner, `list /users` and `list /carts` → allow.
+**RESOLVED — verified 2026-08-10.** The deployed rules were read directly in the
+Firebase console and are **already correctly locked down** (deployed 2026-07-16):
+`carts/{uid}` and `users/{uid}` allow read/write only when
+`request.auth.uid == uid` (owner reads all via `isOwner()`), `inquiryStatus` is
+owner-only, and `isOwner()` pins the owner uids (by uid, not email). No
+permissive hole exists in production. See VEDAM-3 in `BUGS.md`.
+
+**Optional hardening (not required):** the repo's [`firestore.rules`](./firestore.rules)
+is an equivalent reference that additionally restricts which fields a shopper
+may write to their own doc via `hasOnly(['items','updated'])` /
+`hasOnly(['email','name','lastSeen','created'])`. To adopt it: replace the UID
+placeholder with the real owner uid(s), paste into Firestore → Rules → Publish,
+and confirm in the Rules Playground that a shopper can `get` their own cart but
+not another's, and cannot `list` the collection.
 
 ## S2 — Inquiry access token travels in the URL **[owner action + code]**
 

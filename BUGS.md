@@ -7,23 +7,38 @@ Status: `OPEN` · `IN PROGRESS` · `CLOSED`
 
 ---
 
-## VEDAM-3 — Firestore rules are the entire access-control model (unverified)
+## VEDAM-3 — Firestore rules are the entire access-control model
 
 | | |
 |---|---|
-| **Status** | IN PROGRESS |
+| **Status** | CLOSED (verified secure in production) |
 | **Opened** | 2026-08-09 |
+| **Closed** | 2026-08-10 |
 | **Reported by** | Security review |
-| **Severity** | Critical — a permissive rule set lets any signed-in customer read every other customer's cart and profile |
-| **Rules in** | `880c638` (`firestore.rules`) |
+| **Severity** | Critical *if* permissive — **verified NOT permissive** |
 | **Pages** | admin.html, login.html (Firestore) |
 
 `admin.html` decides owner access solely by whether a read of the `users`
-collection succeeds. The deployed rules are not in the repo and could not be
-verified. Locked-down rules are now provided in `firestore.rules`; they still
-need the owner UID filled in and must be **published in the Firebase console**
-(see `SECURITY.md` S1). Closes when the rules are published and verified in the
-Rules Playground.
+collection succeeds, so everything rests on the Firestore rules — which are not
+in the repo and so could not be verified from code alone.
+
+**Verified 2026-08-10** by reading the deployed rules directly in the Firebase
+console. They were **already correctly locked down** (deployed 2026-07-16):
+
+- `carts/{uid}` and `users/{uid}`: `allow read, write: if request.auth.uid == uid`
+  (a shopper touches only their own doc); `allow read: if isOwner()` (owner
+  reads all). An unconstrained collection `list` by a shopper is denied.
+- `inquiryStatus/{id}`: `isOwner()` only.
+- `isOwner()` pins two UIDs (the `owner@…` account and the personal owner
+  account) — access is by uid, not email, so a signup using an owner's email
+  can't gain access. Unmatched paths are denied by Firestore default.
+
+The critical hole does **not** exist in production. `firestore.rules` in this
+repo is kept as an equivalent reference that adds one optional hardening the
+live rules lack: `hasOnly([...])` to restrict which fields a shopper may write
+to their own `carts`/`users` doc. Adopting it is optional; the live rules are
+secure without it. The repo file keeps a UID placeholder rather than committing
+the real owner UIDs to a public repo.
 
 ---
 
@@ -31,16 +46,46 @@ Rules Playground.
 
 | | |
 |---|---|
-| **Status** | OPEN |
+| **Status** | IN PROGRESS (live) |
 | **Opened** | 2026-08-09 |
 | **Reported by** | Security review |
-| **Severity** | High — the primary CTA on book-a-fitting.html does nothing |
-| **Pages** | book-a-fitting.html |
+| **Severity** | High — the primary CTA on book-a-fitting.html did nothing |
+| **Fixed in** | PR #2 (`improve/security-and-hig`) |
+| **Pages** | book-a-fitting.html, fittings-apps-script.gs |
 
-The form still posts to the literal string `PASTE_FITTING_SHEET_WEB_APP_URL`
-(both occurrences). Needs a real Apps Script Web App deployment URL. Blocked on
-the owner creating/providing that deployment (`fittings-apps-script.gs` is the
-server side and is ready to deploy).
+The form posted to the literal `PASTE_FITTING_SHEET_WEB_APP_URL`, so nothing was
+sent. Now **live**: it posts to the existing "Vedam Inquiries" Apps Script
+endpoint (the same one contact-us.html uses), so fitting requests land in the
+inquiries sheet and surface in the owner portal. The fitting details are packed
+into `subject` (`Fitting request — …`) and a formatted `message`, so they are
+captured regardless of that endpoint's column schema.
+
+Added a **Fitting Type** choice — *In-person fitting* vs *Ship to me — remote
+fitting* — plus a **Shipping Address** field, required when shipping is chosen
+(client-side validation).
+
+**Deposit gate for shipped fittings:** because a piece leaves the house for a
+home fitting, choosing *Ship to me* now requires a **refundable deposit**. The
+form shows a deposit notice + acknowledgment checkbox; submission is blocked
+until it is ticked, and the request records `depositAck: Yes` plus a
+`Deposit acknowledged: Yes` line in the message. No card processing is built —
+the owner collects the deposit during the confirmation email, consistent with
+the reservation model. (An earlier attempt to reveal the notice only on
+shipping was removed: the custom runtime didn't re-show it reliably, which would
+have trapped shoppers behind a hidden-but-required box — so the notice is always
+visible and the requirement is enforced only for shipping.)
+
+Verified in real Chrome: deposit box visible; a shipping submission is **blocked
+when unticked** and **allowed when ticked**; the posted payload carries
+`fittingType`, `address`, `depositAck: Yes`, a `Fitting request — …` subject and
+a formatted `message` (all confirmed with the live endpoint stubbed — no real
+row written).
+
+`fittings-apps-script.gs` was updated with matching `Fitting Type` /
+`Shipping Address` / `Deposit Ack` columns for the day a **dedicated** fitting
+sheet is deployed; to switch to it, deploy that script and set the form's
+`sheetWebAppUrl` prop to the new `/exec` URL. Real end-to-end send not yet
+exercised (would write a live row) — recommend one test submission to confirm.
 
 ---
 
