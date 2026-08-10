@@ -11,6 +11,10 @@
     --cream: #F7ECDE; --cream-2: #F3E6C8; --card: #FCF5EA;
     --ink: #3A1210; --ink-2: #6B4A41; --ink-3: #8A6A5F;
     --maroon: #6A0F0C; --terra: #A5341F; --gold: #CBA14C;
+    /* --gold-text / --ink-3-text: WCAG 4.5:1-passing variants for use as TEXT
+       on the cream/card backgrounds. --gold and --ink-3 above stay reserved
+       for borders, chart fills and dividers where contrast rules don't apply. */
+    --gold-text: #8A6A1E; --ink-3-text: #6B4A41;
     --line: rgba(106, 15, 12, .16);
     --good: #2E6B3E; --warn: #8A5A00;
   }
@@ -27,10 +31,15 @@
   .who { font-size: 13px; color: var(--ink-2); text-align: right; }
   .who button { margin-left: 10px; }
   h2 { font-size: 13px; letter-spacing: .22em; text-transform: uppercase; color: var(--maroon); margin: 40px 0 14px; font-weight: 400; }
-  h2 .sub { text-transform: none; letter-spacing: 0; color: var(--ink-3); font-size: 12px; margin-left: 10px; }
+  h2 .sub { text-transform: none; letter-spacing: 0; color: var(--ink-3-text); font-size: 12px; margin-left: 10px; }
   button, .btn {
     font: 13px Georgia, serif; letter-spacing: .06em; cursor: pointer;
     background: var(--maroon); color: var(--cream-2); border: 0; border-radius: 3px; padding: 7px 16px;
+    min-height: 40px;
+  }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--maroon); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
   }
   button.ghost { background: transparent; color: var(--maroon); border: 1px solid var(--maroon); }
   button:disabled { opacity: .5; cursor: default; }
@@ -40,7 +49,7 @@
   }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 20px; }
   .msg { font-size: 13px; margin-top: 10px; color: var(--terra); min-height: 18px; }
-  .muted { color: var(--ink-3); font-size: 13px; }
+  .muted { color: var(--ink-3-text); font-size: 13px; }
 
   /* sign-in */
   #gate { max-width: 380px; margin: 9vh auto 0; }
@@ -116,29 +125,29 @@
     <div class="kpis" id="kpis"></div>
 
     <h2>Demand<span class="sub">pieces sitting in customer carts right now</span></h2>
-    <div class="chart" id="demand"><p class="muted">Loading…</p></div>
+    <div class="chart" id="demand" role="img" aria-label="Demand chart — pieces sitting in customer carts right now"><p class="muted">Loading…</p></div>
 
     <h2>Customers &amp; carts<span class="sub">accounts appear here after their first visit since 16 Jul 2026</span></h2>
     <div class="tblwrap"><table id="custTbl">
-      <thead><tr><th>Customer</th><th>Email</th><th>First seen</th><th>Last seen</th><th>Cart</th><th class="num">Cart value</th></tr></thead>
+      <thead><tr><th scope="col">Customer</th><th scope="col">Email</th><th scope="col">First seen</th><th scope="col">Last seen</th><th scope="col">Cart</th><th scope="col" class="num">Cart value</th></tr></thead>
       <tbody><tr><td colspan="6" class="muted">Loading…</td></tr></tbody>
     </table></div>
 
     <h2>Inquiries &amp; reservations<span class="sub">from the contact form — <a href="https://docs.google.com/spreadsheets/d/11x96CU43jRK47MkfiLAMyAntWOTFxbeR9nHk40gzzeE/edit?gid=0#gid=0" target="_blank" rel="noopener">open the Vedam Inquiries sheet ↗</a></span></h2>
     <div class="tokrow">
-      <input type="text" id="tok" placeholder="Inquiries access token (saved on this device)">
+      <input type="text" id="tok" aria-label="Inquiries access token" placeholder="Inquiries access token (saved on this device)">
       <button class="ghost" id="tokBtn" type="button">Load inquiries</button>
       <button class="ghost" id="sheetBtn" type="button">Show sheet</button>
     </div>
     <div id="sheetBox" style="display:none; margin-bottom:12px; background:var(--card); border:1px solid var(--line); border-radius:6px; overflow:hidden"></div>
     <div class="tblwrap"><table id="inqTbl">
-      <thead><tr><th>When</th><th>From</th><th>Message</th><th>Status</th></tr></thead>
+      <thead><tr><th scope="col">When</th><th scope="col">From</th><th scope="col">Message</th><th scope="col">Status</th></tr></thead>
       <tbody><tr><td colspan="4" class="muted">Enter the access token above, then Load inquiries.</td></tr></tbody>
     </table></div>
 
     <h2>Catalog &amp; price list</h2>
     <div class="tblwrap"><table id="catTbl">
-      <thead><tr><th>Piece</th><th>Collection</th><th>Note</th><th class="num">Price</th></tr></thead>
+      <thead><tr><th scope="col">Piece</th><th scope="col">Collection</th><th scope="col">Note</th><th scope="col" class="num">Price</th></tr></thead>
       <tbody></tbody>
     </table></div>
 
@@ -290,7 +299,7 @@ async function render(usersSnap) {
   const rows = [...uids].map((uid) => {
     const p = users[uid] || {};
     const items = (carts[uid] && Array.isArray(carts[uid].items)) ? carts[uid].items : [];
-    const value = items.reduce((s, it) => s + (it.price || PRICE[it.id] || 0) * (it.qty || 1), 0);
+    const value = items.reduce((s, it) => s + (PRICE[it.id] ?? it.price ?? 0) * (it.qty || 1), 0);
     const count = items.reduce((s, it) => s + (it.qty || 1), 0);
     return { uid, p, items, value, count };
   }).sort((a, b) => (b.p.lastSeen || 0) - (a.p.lastSeen || 0));
@@ -311,7 +320,7 @@ async function render(usersSnap) {
     const k = it.id || it.name;
     demand[k] = demand[k] || { name: it.name || it.id, n: 0, v: 0 };
     demand[k].n += it.qty || 1;
-    demand[k].v += (it.price || PRICE[it.id] || 0) * (it.qty || 1);
+    demand[k].v += (PRICE[it.id] ?? it.price ?? 0) * (it.qty || 1);
   }));
   const dl = Object.values(demand).sort((a, b) => b.n - a.n);
   if (!dl.length) {
