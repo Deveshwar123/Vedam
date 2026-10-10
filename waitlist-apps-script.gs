@@ -267,10 +267,10 @@ function join_(p) {
 
     var row = COLS.map(function (c) {
       return c === 'Timestamp' ? new Date()
-        : c === 'Name' ? name
-        : c === 'Email' ? email
-        : c === 'Phone' ? phone
-        : c === 'Source' ? source
+        : c === 'Name' ? safeCell_(name)
+        : c === 'Email' ? safeCell_(email)
+        : c === 'Phone' ? safeCell_(phone)
+        : c === 'Source' ? safeCell_(source)
         : c === 'Status' ? 'Subscribed'
         : c === 'Campaigns Sent' ? 0
         : '';
@@ -884,14 +884,16 @@ function emailRowMap_(sh, idx) {
 function setCells_(sh, row, idx, patch) {
   Object.keys(patch).forEach(function (name) {
     if (idx[name] === undefined) return;
-    sh.getRange(row, idx[name] + 1).setValue(patch[name]);
+    var v = patch[name];
+    sh.getRange(row, idx[name] + 1).setValue(typeof v === 'string' ? safeCell_(v) : v);
   });
 }
 
 function logLine_(type, email, subject, status, detail, provider) {
   try {
     var sh = sheetFor_(SHEET_LOG, LOG_COLS);
-    sh.appendRow([new Date(), type, email, clip_(subject, 200), status, clip_(detail, 400), provider || '']);
+    sh.appendRow([new Date(), type, safeCell_(email), safeCell_(clip_(subject, 200)),
+                  status, safeCell_(clip_(detail, 400)), provider || '']);
     // Keep the log from growing without bound: trim the oldest rows past 5,000.
     var last = sh.getLastRow();
     if (last > 5001) sh.deleteRows(2, last - 5001);
@@ -935,6 +937,21 @@ function json_(obj) {
 }
 
 function clip_(v, n) { return String(v == null ? '' : v).trim().slice(0, n); }
+
+/**
+ * Google Sheets reads a cell starting with =, +, - or @ as a FORMULA. A phone
+ * number like "+91 98765 43210" therefore lands in the sheet as #ERROR! and
+ * the number is lost — which is every international number, so this is not an
+ * edge case. A leading apostrophe forces the cell to text; Sheets strips it
+ * again on read, so getValues() still returns the clean number.
+ * It also closes the formula-injection hole: a subscriber cannot type a
+ * HYPERLINK() or IMPORTRANGE() into a field and have it execute in the
+ * owner's spreadsheet.
+ */
+function safeCell_(v) {
+  var s = String(v == null ? '' : v);
+  return /^[=+\-@]/.test(s) ? "'" + s : s;
+}
 function normEmail_(v) { return clip_(v, MAX.email).toLowerCase(); }
 function emailOk_(v) { return /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/.test(String(v || '')); }
 function esc_(s) {
