@@ -40,7 +40,7 @@ window.VEDAM_LAUNCH = {
    * still renders and counts down, but tells visitors to email the house
    * directly instead of silently dropping their details.
    * ------------------------------------------------------------------- */
-  endpoint: '',
+  endpoint: 'https://script.google.com/macros/s/AKfycbwI9O7iPucvZV1YLoCPUocNg9eYiww2V6FvawmwVUtR7f-vj2_qr_rwmXIe6NBCzWbyGg/exec',
 
   /* ---------------------------------------------------------------------
    * 3. WHERE LAUNCH MODE SENDS PEOPLE
