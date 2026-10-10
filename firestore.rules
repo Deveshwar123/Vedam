@@ -2,6 +2,10 @@ rules_version = '2';
 
 // Vedam — Firestore security rules
 // ---------------------------------------------------------------------------
+// UPDATE 2026-10-10: the waitlist added one new collection, `ownerSecrets`,
+// which MUST be published to the live rules — see the block near the bottom.
+// Everything else below is unchanged.
+//
 // NOTE (verified 2026-08-10): the LIVE deployed rules are already correctly
 // locked down (owner-scoped read/write, owner-only inquiryStatus, isOwner
 // pinned by uid). See VEDAM-3 in BUGS.md / S1 in SECURITY.md. This file is an
@@ -62,6 +66,19 @@ service cloud.firestore {
 
     // Inquiry handled-flags (written by admin.html "Mark handled"). Owner only.
     match /inquiryStatus/{key} {
+      allow read, write: if isOwner();
+    }
+
+    // Owner-only secret store. Holds the waitlist Apps Script admin token, so
+    // the token follows the owner ACCOUNT instead of living in the repo, in a
+    // URL or in one browser's localStorage. A customer — signed in or not —
+    // cannot read or write a single document here.
+    //
+    // THIS RULE MUST BE ADDED TO THE LIVE RULES before the waitlist section of
+    // admin.html can store its token: unmatched paths are denied by default,
+    // so without it the portal falls back to a session-only token that has to
+    // be pasted again on every visit.
+    match /ownerSecrets/{doc} {
       allow read, write: if isOwner();
     }
 

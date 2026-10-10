@@ -6,6 +6,9 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Owner Portal — Vedam</title>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin="anonymous">
+<!-- Same config file the site reads, so the portal and the pages can never
+     disagree about which backend the waitlist talks to. -->
+<script src="./launch-config.js"></script>
 <style>
   :root {
     --cream: #F7ECDE; --cream-2: #F3E6C8; --card: #FCF5EA;
@@ -94,6 +97,34 @@
   a { color: var(--maroon); }
   .tokrow { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
   .tokrow input { max-width: 340px; }
+
+  /* ---- waitlist & launch ---- */
+  .wlgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 12px; }
+  .wlrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .wlrow label { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+  .wlrow input[type=datetime-local], .wlrow input[type=url], .wlrow input[type=search] {
+    font: 15px Georgia, serif; color: var(--ink); background: #FFFDF8;
+    border: 1px solid var(--line); border-radius: 3px; padding: 9px 12px; min-height: 40px;
+  }
+  .wlrow input[type=search] { flex: 1 1 220px; max-width: 360px; }
+  .wlnote { font-size: 13px; color: var(--ink-3-text); margin-top: 6px; }
+  .wlbig { font-size: 17px; color: var(--maroon); }
+  textarea.wlbody {
+    width: 100%; min-height: 190px; resize: vertical;
+    font: 15px/1.6 Georgia, serif; color: var(--ink); background: #FFFDF8;
+    border: 1px solid var(--line); border-radius: 3px; padding: 11px 12px;
+  }
+  input.wlsubject { font: 15px Georgia, serif; width: 100%; background: #FFFDF8;
+    border: 1px solid var(--line); border-radius: 3px; padding: 9px 12px; min-height: 40px; color: var(--ink); }
+  .danger { background: var(--terra); }
+  .confirmbox { display: none; margin-top: 12px; padding: 12px 14px; border: 1px solid var(--terra); border-radius: 4px; background: #FFF6F1; }
+  .confirmbox.on { display: block; }
+  .confirmbox input { font: 15px Georgia, serif; max-width: 160px; margin: 8px 8px 0 0;
+    background: #FFFDF8; border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; min-height: 40px; }
+  .pill.fail { color: var(--terra); border-color: var(--terra); }
+  .pill.sent { color: var(--good); border-color: var(--good); }
+  .pill.wait { color: var(--warn); border-color: var(--warn); }
+  .locked { font-size: 13px; color: var(--ink-2); }
   #app { display: none; }
 </style>
 </head>
@@ -123,6 +154,98 @@
   <div id="app">
     <h2>Today<span class="sub" id="asof"></span></h2>
     <div class="kpis" id="kpis"></div>
+
+    <!-- ====================== waitlist & launch ====================== -->
+    <h2>Waitlist &amp; launch<span class="sub" id="wlMode"></span></h2>
+
+    <!-- The list lives in the Apps Script sheet, behind an admin token. The
+         token is kept in Firestore under ownerSecrets/waitlist, which the
+         security rules open to the owner uid only — so it is never in the
+         repo, never in a URL and never in this browser's storage. Paste it
+         once; every owner device picks it up after sign-in. -->
+    <div id="wlConnect" class="card" style="display:none; margin-bottom:12px">
+      <h3>Connect the waitlist</h3>
+      <p class="muted" id="wlConnectWhy"></p>
+      <div class="wlrow" style="margin-top:10px">
+        <input type="password" id="wlTok" autocomplete="off" placeholder="Admin token from the Apps Script setup log" style="max-width:420px">
+        <button class="ghost" id="wlTokBtn" type="button">Save to this account</button>
+      </div>
+      <p class="wlnote">Stored in Firestore for the owner account only. Run <code>setupVedamWaitlist</code> in the Apps Script editor to see the token in the execution log.</p>
+    </div>
+
+    <div class="kpis" id="wlKpis"></div>
+
+    <h2>Launch date<span class="sub">drives the countdown, the site switch and the announcement email</span></h2>
+    <div class="card">
+      <div class="wlrow">
+        <label for="wlWhen">Opens at</label>
+        <input type="datetime-local" id="wlWhen">
+        <button id="wlSaveWhen" type="button">Save launch date</button>
+        <button class="ghost" id="wlClearWhen" type="button">Clear date</button>
+      </div>
+      <div class="wlrow">
+        <label for="wlUrl">Collection link</label>
+        <input type="url" id="wlUrl" placeholder="https://deveshwar123.github.io/Vedam/collections.html" style="flex:1 1 320px; max-width:480px">
+        <button class="ghost" id="wlSaveUrl" type="button">Save link</button>
+      </div>
+      <p class="wlnote" id="wlWhenNote">—</p>
+      <p class="wlnote">Times are read in <b>this device's</b> timezone and stored as an exact instant, so the countdown is the same for every visitor. Saving a date needs no site redeploy.</p>
+
+      <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--line)">
+        <button class="danger" id="wlLaunchNow" type="button">Send launch announcement now</button>
+        <span class="wlnote" id="wlLaunchNote" style="margin-left:10px"></span>
+        <div class="confirmbox" id="wlLaunchConfirm">
+          <b>This emails every subscriber who has not had the announcement yet.</b>
+          It cannot be undone, and it is sent once per person — nobody gets it twice.
+          <div><input type="text" id="wlLaunchWord" placeholder="Type SEND" autocomplete="off">
+          <button class="danger" id="wlLaunchGo" type="button">Send it</button>
+          <button class="ghost" id="wlLaunchCancel" type="button">Cancel</button></div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Subscribers<span class="sub" id="wlCount"></span></h2>
+    <div class="wlrow">
+      <input type="search" id="wlFind" placeholder="Filter by name, email or phone" aria-label="Filter subscribers">
+      <button class="ghost" id="wlCsv" type="button">Export CSV</button>
+      <button class="ghost" id="wlReload" type="button">Reload</button>
+    </div>
+    <div class="tblwrap"><table id="wlTbl">
+      <thead><tr>
+        <th scope="col">Name</th><th scope="col">Email</th><th scope="col">Phone</th>
+        <th scope="col">Joined</th><th scope="col">Status</th>
+        <th scope="col">Confirmation</th><th scope="col">Launch email</th><th scope="col"></th>
+      </tr></thead>
+      <tbody><tr><td colspan="8" class="muted">Connect the waitlist above to load subscribers.</td></tr></tbody>
+    </table></div>
+    <p class="wlnote" id="wlDelivery"></p>
+
+    <h2>Email the list<span class="sub">announcements, updates, the next collection</span></h2>
+    <div class="card">
+      <div class="wlrow"><label for="wlSubject" style="flex:0 0 100%">Subject</label>
+        <input class="wlsubject" type="text" id="wlSubject" maxlength="200" placeholder="A new collection is coming to the house"></div>
+      <div class="wlrow"><label for="wlBody" style="flex:0 0 100%">Message</label>
+        <textarea class="wlbody" id="wlBody" maxlength="20000" placeholder="Write in plain paragraphs. Leave a blank line between them.
+
+Vedam's letterhead, the greeting with their first name and the unsubscribe link are added for you."></textarea></div>
+      <div class="wlrow">
+        <label for="wlAudience">Send to</label>
+        <select id="wlAudience" style="font:15px Georgia,serif; padding:9px 12px; min-height:40px; border:1px solid var(--line); border-radius:3px; background:#FFFDF8; color:var(--ink)">
+          <option value="subscribed">Everyone subscribed</option>
+          <option value="not_launched">Only those who have not had the launch email</option>
+        </select>
+        <button class="ghost" id="wlTest" type="button">Send a test to me</button>
+        <button id="wlSend" type="button">Send to the list</button>
+      </div>
+      <p class="wlnote" id="wlCampNote"></p>
+      <div class="confirmbox" id="wlSendConfirm">
+        <b id="wlSendCount">This sends to the list.</b>
+        Unsubscribed people are always skipped, and nobody receives it twice.
+        <div><input type="text" id="wlSendWord" placeholder="Type SEND" autocomplete="off">
+        <button class="danger" id="wlSendGo" type="button">Send it</button>
+        <button class="ghost" id="wlSendCancel" type="button">Cancel</button></div>
+      </div>
+    </div>
 
     <h2>Demand<span class="sub">pieces sitting in customer carts right now</span></h2>
     <div class="chart" id="demand" role="img" aria-label="Demand chart — pieces sitting in customer carts right now"><p class="muted">Loading…</p></div>
@@ -161,6 +284,7 @@
           <li><a href="https://console.firebase.google.com/project/vedam-4b313/firestore/databases/-default-/data" target="_blank" rel="noopener">Firestore — carts &amp; profiles data</a></li>
           <li><a href="https://docs.google.com/spreadsheets/d/11x96CU43jRK47MkfiLAMyAntWOTFxbeR9nHk40gzzeE/edit?gid=0#gid=0" target="_blank" rel="noopener">Vedam Inquiries sheet</a> — every contact-form submission lands here</li>
           <li><a href="https://script.google.com/home" target="_blank" rel="noopener">Apps Script</a> — deployment “Vedam Inquiries” feeds the sheet and this portal</li>
+          <li><b>Waitlist</b>: the “Vedam Waitlist” sheet holds every signup; its own Apps Script deployment sends the confirmation, launch and campaign emails. Setup and operations: <a href="https://github.com/Deveshwar123/Vedam/blob/main/WAITLIST.md" target="_blank" rel="noopener">WAITLIST.md</a></li>
         </ul>
       </div>
       <div class="card">
@@ -169,6 +293,15 @@
           <li>Every piece is <b>reservation, not instant purchase</b>: a customer adds pieces to their cart (login required), then “Reserve Your Pieces” sends them to the contact form.</li>
           <li>Their reservation arrives as a row in the <b>Inquiries</b> section above — reply by email to confirm fabric, measurements, timeline and payment.</li>
           <li>Made-to-order pieces are non-returnable except for genuine defect or misdescription (see <a href="./policies.html" target="_blank" rel="noopener">policies</a>); one free fit alteration is included.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>What happens on launch day</h3>
+        <ul>
+          <li>The moment the date passes, every page opens by itself — nothing to push or click.</li>
+          <li>Within 15 minutes the announcement goes to everyone on the waitlist, in batches, and each person is marked as sent — <b>nobody is emailed twice</b>, even if a send fails or the daily quota runs out partway.</li>
+          <li>Watch <b>launch emails sent / pending</b> in the tiles above. Pending clears itself; a failure can be re-sent from the ⋯ button on that person's row.</li>
+          <li>To open early, use <b>Send launch announcement now</b>. It cannot be undone.</li>
         </ul>
       </div>
       <div class="card">
@@ -182,6 +315,8 @@
       <div class="card">
         <h3>Open items</h3>
         <ul>
+          <li><b>Before the launch:</b> deploy the waitlist Apps Script, put its <code>/exec</code> URL into <code>launch-config.js</code>, publish the <code>ownerSecrets</code> rule in Firestore, then set the launch date above. Steps in <a href="https://github.com/Deveshwar123/Vedam/blob/main/WAITLIST.md" target="_blank" rel="noopener">WAITLIST.md</a>.</li>
+          <li>The site is <b>closed to visitors</b> until the launch date — every page sends them to the waitlist. Add <code>?preview=1</code> to any page to look around yourself.</li>
           <li>Policies page still needs the <b>legal entity name, registered address, phone number and named grievance officer</b> (required by the E-Commerce Rules 2020) — only the email is published so far.</li>
           <li>Policy copy should get a lawyer’s once-over before it is relied on.</li>
           <li>Optional hardening: restrict the Firebase browser API key to <code>deveshwar123.github.io/*</code> in Google Cloud console.</li>
@@ -196,7 +331,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, setDoc }
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -272,6 +407,7 @@ async function enter(u) {
   $("outBtn").onclick = () => signOut(auth);
   $("asof").textContent = "as of " + new Date().toLocaleString("en-IN", { day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" });
   render(users);
+  wlEnter();
   const savedTok = localStorage.getItem("vedamAdminToken") || "";
   $("tok").value = savedTok;
   if (savedTok) loadInquiries();
@@ -441,6 +577,372 @@ async function loadInquiries() {
     b.disabled = false;
   }));
 }
+
+/* =======================================================================
+   waitlist & launch
+   -----------------------------------------------------------------------
+   Everything here goes through the Apps Script web app, which is the only
+   thing that can read the subscriber sheet. Two locks stand in front of it,
+   and both are enforced on a server, not in this page:
+
+     1. Firebase sign-in + Firestore rules — this whole #app section only
+        renders for a uid the rules recognise as an owner.
+     2. The admin token — held in Firestore at ownerSecrets/waitlist, which
+        the rules open to the owner uid alone.
+
+   So the token is not in the repo, not in a URL (it travels in the POST
+   body — SECURITY.md S2), and not in localStorage. A stranger who opens
+   this public page sees the sign-in gate and nothing else.
+   ======================================================================= */
+
+const WL = { url: "", token: "", rows: [], stats: null };
+
+const wlEl = (id) => document.getElementById(id);
+
+function wlDate(v) {
+  if (!v) return "—";
+  const t = Date.parse(v);
+  if (isNaN(t)) return String(v);
+  return new Date(t).toLocaleString("en-IN", {
+    day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit"
+  });
+}
+
+/** A JSON POST sent as text/plain: a "simple" request, so the browser does
+ *  not ask for a CORS preflight that Apps Script cannot answer. */
+async function wlPost(action, extra) {
+  if (!WL.url) throw new Error("no endpoint configured");
+  const body = Object.assign({ action, token: WL.token }, extra || {});
+  const res = await fetch(WL.url, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(body)
+  });
+  const j = JSON.parse(await res.text());
+  if (j && j.error === "unauthorized") throw new Error("the admin token was refused");
+  return j;
+}
+
+async function wlEnter() {
+  WL.url = ((window.VEDAM_LAUNCH || {}).endpoint || "").trim();
+
+  if (!WL.url) {
+    wlConnectCard("No waitlist backend is configured yet. Deploy waitlist-apps-script.gs, then put its /exec URL into launch-config.js (the endpoint field) and push.", false);
+    wlKpis(null);
+    return;
+  }
+
+  // The token follows the owner account, not the device.
+  let rulesMissing = false;
+  try {
+    const snap = await getDoc(doc(db, "ownerSecrets", "waitlist"));
+    WL.token = (snap.exists() && snap.data().token) || "";
+  } catch (e) { WL.token = ""; rulesMissing = true; }
+
+  if (!WL.token) {
+    wlConnectCard(rulesMissing
+      ? "Paste the admin token to work now. To have it remembered for this owner account, publish the ownerSecrets block from firestore.rules in the Firebase console first."
+      : "Paste the admin token once and it is stored for this owner account — you will not be asked again on any device.", true);
+    wlKpis(null);
+    return;
+  }
+  wlEl("wlConnect").style.display = "none";
+  wlLoad();
+}
+
+function wlConnectCard(why, canPaste) {
+  wlEl("wlConnect").style.display = "block";
+  wlEl("wlConnectWhy").textContent = why;
+  wlEl("wlTok").style.display = canPaste ? "" : "none";
+  wlEl("wlTokBtn").style.display = canPaste ? "" : "none";
+}
+
+wlEl("wlTokBtn").addEventListener("click", async () => {
+  const tok = wlEl("wlTok").value.trim();
+  if (!tok) return;
+  const b = wlEl("wlTokBtn"); b.disabled = true;
+  WL.token = tok;
+  try {
+    // Prove it works before storing it, so a typo is not saved.
+    const probe = await wlPost("stats");
+    if (!probe.ok) throw new Error(probe.error || "the token was refused");
+
+    // The token works. Try to store it for the account — and if the
+    // ownerSecrets rule has not been published yet, keep going with it in
+    // memory for this visit rather than dead-ending. In memory is the safer
+    // of the two failure modes: nothing is written to this device at all.
+    let stored = true;
+    try {
+      await setDoc(doc(db, "ownerSecrets", "waitlist"), { token: tok, savedAt: Date.now() }, { merge: true });
+    } catch (e2) { stored = false; }
+
+    wlEl("wlTok").value = "";                 // never leave it sitting in the DOM
+    wlEl("wlConnect").style.display = "none";
+    wlLoad();
+    if (!stored) {
+      wlEl("wlDelivery").textContent =
+        "Working for this visit only: the token could not be saved because the " +
+        "ownerSecrets rule is not published yet. Publish the ownerSecrets block " +
+        "from firestore.rules in the Firebase console, then paste the token once more.";
+    }
+  } catch (e) {
+    WL.token = "";
+    wlEl("wlConnectWhy").textContent = "That did not work: " + e.message;
+  }
+  b.disabled = false;
+});
+
+async function wlLoad() {
+  const tb = wlEl("wlTbl").tBodies[0];
+  tb.innerHTML = '<tr><td colspan="8" class="muted">Loading…</td></tr>';
+  try {
+    const j = await wlPost("list");
+    if (!j.ok) throw new Error(j.error || "unknown error");
+    WL.rows = j.rows || [];
+    WL.stats = j.stats || null;
+    wlKpis(WL.stats);
+    wlPaintLaunch(WL.stats);
+    wlTable();
+  } catch (e) {
+    tb.innerHTML = '<tr><td colspan="8" class="muted">Could not load the waitlist — ' + esc(e.message) + "</td></tr>";
+    wlEl("wlMode").textContent = "";
+  }
+}
+
+function wlKpis(st) {
+  const t = (v, l) => `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  if (!st) { wlEl("wlKpis").innerHTML = t("—", "waitlist not connected"); return; }
+  wlEl("wlKpis").innerHTML =
+    t(st.total, "on the waitlist") +
+    t(st.subscribed, "subscribed") +
+    t(st.week, "joined, last 7 days") +
+    t(st.launchSent, "launch emails sent") +
+    t(st.launchPending, "launch emails pending") +
+    t(st.quotaLeft < 0 ? "—" : st.quotaLeft, "emails left today");
+
+  const bits = [];
+  if (st.confirmFailed) bits.push(st.confirmFailed + " confirmation email" + (st.confirmFailed > 1 ? "s" : "") + " failed to send");
+  if (st.launchFailed) bits.push(st.launchFailed + " launch email" + (st.launchFailed > 1 ? "s" : "") + " failed");
+  bits.push("sending through " + st.provider);
+  if (st.quotaLeft === 0) bits.push("today's send quota is used up — queued mail resumes automatically tomorrow");
+  if (st.campaign) bits.push('campaign "' + st.campaign.subject + '" is sending: ' + st.campaign.sent + " of " + st.campaign.total);
+  wlEl("wlDelivery").innerHTML = bits.map(esc).join(" · ") +
+    ' · every send is logged row by row in the "Email Log" tab of the waitlist sheet.';
+}
+
+function wlPaintLaunch(st) {
+  if (!st) return;
+  const launched = st.mode === "launched";
+  wlEl("wlMode").textContent = launched ? "the house is open" :
+    (st.launchAt ? "waitlist mode — counting down" : "waitlist mode — no date set yet");
+
+  if (st.launchAt) {
+    const d = new Date(st.launchAt);
+    // datetime-local wants the owner's own wall clock, not UTC.
+    const pad = (n) => String(n).padStart(2, "0");
+    wlEl("wlWhen").value = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) +
+      "T" + pad(d.getHours()) + ":" + pad(d.getMinutes());
+    const ms = d.getTime() - Date.now();
+    const days = Math.floor(Math.abs(ms) / 864e5);
+    const hrs = Math.floor(Math.abs(ms) % 864e5 / 36e5);
+    wlEl("wlWhenNote").innerHTML = launched
+      ? "Opened <b>" + esc(wlDate(st.launchAt)) + "</b> — " + days + "d " + hrs + "h ago. The site is in launch mode."
+      : "Opens <b>" + esc(wlDate(st.launchAt)) + "</b> — " + days + "d " + hrs + "h from now.";
+  } else {
+    wlEl("wlWhen").value = "";
+    wlEl("wlWhenNote").textContent = "No date set. The site shows the waitlist with no countdown, and no launch email can go out.";
+  }
+  if (st.collectionUrl) wlEl("wlUrl").value = st.collectionUrl;
+  wlEl("wlLaunchNote").textContent = launched
+    ? st.launchPending + " subscriber" + (st.launchPending === 1 ? "" : "s") + " still to receive it"
+    : "The date has not passed — sending now opens the house early.";
+}
+
+wlEl("wlSaveWhen").addEventListener("click", async () => {
+  const v = wlEl("wlWhen").value;
+  if (!v) { wlEl("wlWhenNote").textContent = "Pick a date and time first."; return; }
+  // The browser gives local wall-clock time; store the absolute instant.
+  await wlConfig({ launchAt: new Date(v).toISOString() });
+});
+
+wlEl("wlClearWhen").addEventListener("click", () => wlConfig({ launchAt: "" }));
+wlEl("wlSaveUrl").addEventListener("click", () => wlConfig({ collectionUrl: wlEl("wlUrl").value.trim() }));
+
+async function wlConfig(patch) {
+  const note = wlEl("wlWhenNote");
+  note.textContent = "Saving…";
+  try {
+    const j = await wlPost("config_set", patch);
+    if (!j.ok) throw new Error(j.error || "unknown error");
+    WL.stats = j.stats;
+    wlKpis(j.stats);
+    wlPaintLaunch(j.stats);
+  } catch (e) { note.textContent = "Could not save: " + e.message; }
+}
+
+/* ---------- the launch announcement ---------- */
+const wlArm = (box, word, on) => { box.classList.toggle("on", on); if (!on) word.value = ""; };
+
+wlEl("wlLaunchNow").addEventListener("click", () =>
+  wlArm(wlEl("wlLaunchConfirm"), wlEl("wlLaunchWord"), true));
+wlEl("wlLaunchCancel").addEventListener("click", () =>
+  wlArm(wlEl("wlLaunchConfirm"), wlEl("wlLaunchWord"), false));
+
+wlEl("wlLaunchGo").addEventListener("click", async () => {
+  if (wlEl("wlLaunchWord").value.trim().toUpperCase() !== "SEND") {
+    wlEl("wlLaunchNote").textContent = 'Type SEND in the box to confirm.'; return;
+  }
+  const b = wlEl("wlLaunchGo"); b.disabled = true;
+  wlEl("wlLaunchNote").textContent = "Sending…";
+  try {
+    const j = await wlPost("launch_now", { confirm: "yes" });
+    if (!j.ok) throw new Error(j.error || "unknown error");
+    wlEl("wlLaunchNote").textContent = "Sent " + (j.sent || 0) +
+      (j.failed ? ", " + j.failed + " failed" : "") +
+      (j.note ? " — " + j.note : "") + ".";
+    wlArm(wlEl("wlLaunchConfirm"), wlEl("wlLaunchWord"), false);
+    wlLoad();
+  } catch (e) { wlEl("wlLaunchNote").textContent = "Could not send: " + e.message; }
+  b.disabled = false;
+});
+
+/* ---------- subscribers table ---------- */
+function wlTable() {
+  const q = (wlEl("wlFind").value || "").trim().toLowerCase();
+  const rows = WL.rows.filter((r) => !q ||
+    [r.Name, r.Email, r.Phone].some((v) => String(v || "").toLowerCase().includes(q)));
+
+  wlEl("wlCount").textContent = rows.length === WL.rows.length
+    ? WL.rows.length + " total"
+    : rows.length + " of " + WL.rows.length + " shown";
+
+  const flag = (v, good) => {
+    if (!v) return '<span class="pill wait">pending</span>';
+    if (v === "Sent") return '<span class="pill sent">sent</span>';
+    if (v === "Failed") return '<span class="pill fail">failed</span>';
+    return '<span class="pill">' + esc(v) + "</span>";
+  };
+
+  wlEl("wlTbl").tBodies[0].innerHTML = rows.length ? rows
+    .sort((a, b) => Date.parse(b.Timestamp || 0) - Date.parse(a.Timestamp || 0))
+    .map((r) => {
+      const sub = String(r.Status || "") === "Subscribed";
+      const email = String(r.Email || "");
+      return `<tr>
+        <td>${esc(r.Name || "—")}</td>
+        <td>${esc(email)}</td>
+        <td>${esc(r.Phone || "—")}</td>
+        <td>${esc(wlDate(r.Timestamp))}</td>
+        <td>${sub ? '<span class="pill sent">subscribed</span>' : '<span class="pill">unsubscribed</span>'}</td>
+        <td>${flag(r["Confirm Email"])}</td>
+        <td>${flag(r["Launch Email"])}</td>
+        <td>${sub ? `<button class="ghost wlmore" data-email="${esc(email)}" type="button">⋯</button>` : ""}</td>
+      </tr>`;
+    }).join("")
+    : '<tr><td colspan="8" class="muted">Nobody on the waitlist yet.</td></tr>';
+
+  wlEl("wlTbl").querySelectorAll(".wlmore").forEach((b) => b.addEventListener("click", () => wlRowMenu(b)));
+}
+
+/** Per-person actions, inline — no modal dialogs. */
+function wlRowMenu(btn) {
+  const email = btn.dataset.email;
+  const td = btn.parentNode;
+  td.innerHTML = `<button class="ghost wlre" type="button">Resend confirmation</button>
+    <button class="ghost wlrm" type="button">Unsubscribe</button>`;
+  td.querySelector(".wlre").addEventListener("click", async (e) => {
+    e.target.disabled = true; e.target.textContent = "Sending…";
+    const j = await wlPost("resend", { email, type: "confirm" }).catch((x) => ({ ok: false, error: x.message }));
+    e.target.textContent = j.ok ? "Sent" : "Failed: " + (j.error || "");
+    if (j.ok) wlLoad();
+  });
+  td.querySelector(".wlrm").addEventListener("click", async (e) => {
+    e.target.disabled = true; e.target.textContent = "Removing…";
+    const j = await wlPost("remove", { email }).catch((x) => ({ ok: false, error: x.message }));
+    if (j.ok) wlLoad(); else e.target.textContent = "Failed";
+  });
+}
+
+wlEl("wlFind").addEventListener("input", wlTable);
+wlEl("wlReload").addEventListener("click", wlLoad);
+
+/* ---------- CSV export (built here, in this browser — no third party) ---- */
+wlEl("wlCsv").addEventListener("click", () => {
+  if (!WL.rows.length) return;
+  const cols = ["Name", "Email", "Phone", "Timestamp", "Status", "Confirm Email", "Confirm At",
+                "Launch Email", "Launch At", "Campaigns Sent", "Last Campaign", "Last Campaign At",
+                "Unsubscribed At", "Source"];
+  const head = ["Name", "Email", "Phone", "Joined", "Status", "Confirmation", "Confirmed at",
+                "Launch email", "Launch sent at", "Campaigns sent", "Last campaign", "Last campaign at",
+                "Unsubscribed at", "Source"];
+  // A leading =, +, - or @ makes a spreadsheet treat a cell as a formula;
+  // prefix those so an exported value can never execute on open.
+  const cell = (v) => {
+    let t = v == null ? "" : String(v);
+    if (/^[=+\-@]/.test(t)) t = "'" + t;
+    return '"' + t.replace(/"/g, '""') + '"';
+  };
+  const csv = [head.map(cell).join(",")]
+    .concat(WL.rows.map((r) => cols.map((c) => cell(r[c])).join(",")))
+    .join("\r\n");
+
+  const stamp = new Date().toISOString().slice(0, 10);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
+  a.download = "vedam-waitlist-" + stamp + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+});
+
+/* ---------- campaigns ---------- */
+wlEl("wlTest").addEventListener("click", async () => {
+  const me = auth.currentUser && auth.currentUser.email;
+  if (!me) return;
+  const note = wlEl("wlCampNote");
+  note.textContent = "Sending a test to " + me + "…";
+  try {
+    const j = await wlPost("campaign", {
+      subject: wlEl("wlSubject").value, html: wlEl("wlBody").value, testTo: me
+    });
+    note.textContent = j.ok ? "Test sent to " + me + " — check how it looks before sending to the list."
+                            : "Test failed: " + (j.error || "unknown error");
+  } catch (e) { note.textContent = "Test failed: " + e.message; }
+});
+
+wlEl("wlSend").addEventListener("click", () => {
+  if (!wlEl("wlSubject").value.trim() || !wlEl("wlBody").value.trim()) {
+    wlEl("wlCampNote").textContent = "A subject and a message are both needed."; return;
+  }
+  const st = WL.stats || {};
+  wlEl("wlSendCount").textContent = "This sends to " + (st.subscribed || 0) +
+    " subscriber" + (st.subscribed === 1 ? "" : "s") + " and cannot be undone.";
+  wlArm(wlEl("wlSendConfirm"), wlEl("wlSendWord"), true);
+});
+
+wlEl("wlSendCancel").addEventListener("click", () =>
+  wlArm(wlEl("wlSendConfirm"), wlEl("wlSendWord"), false));
+
+wlEl("wlSendGo").addEventListener("click", async () => {
+  if (wlEl("wlSendWord").value.trim().toUpperCase() !== "SEND") {
+    wlEl("wlCampNote").textContent = "Type SEND in the box to confirm."; return;
+  }
+  const b = wlEl("wlSendGo"); b.disabled = true;
+  wlEl("wlCampNote").textContent = "Sending…";
+  try {
+    const j = await wlPost("campaign", {
+      subject: wlEl("wlSubject").value,
+      html: wlEl("wlBody").value,
+      audience: wlEl("wlAudience").value
+    });
+    if (!j.ok) throw new Error(j.error || "unknown error");
+    wlEl("wlCampNote").textContent = "Queued for " + (j.queued || 0) + " · sent " + (j.sent || 0) +
+      (j.remaining ? " · " + j.remaining + " still to go (they send automatically, in the background)" : "") + ".";
+    wlArm(wlEl("wlSendConfirm"), wlEl("wlSendWord"), false);
+    wlEl("wlSubject").value = ""; wlEl("wlBody").value = "";
+    wlLoad();
+  } catch (e) { wlEl("wlCampNote").textContent = "Could not send: " + e.message; }
+  b.disabled = false;
+});
 
 /* ---------- chart tooltip ---------- */
 const tip = $("tip");
