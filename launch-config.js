@@ -30,7 +30,7 @@ window.VEDAM_LAUNCH = {
    * the waitlist and the sign-up form with no countdown, and says the date
    * is being announced soon. Nothing breaks, and no launch email can fire.
    * ------------------------------------------------------------------- */
-  launchAt: '',
+  launchAt: '2026-10-17T20:30:00-05:00',   // Sat 17 Oct 2026, 8:30 pm CDT
 
   /* ---------------------------------------------------------------------
    * 2. THE BACKEND (Google Apps Script web app URL, ends in /exec)
