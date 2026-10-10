@@ -51,7 +51,7 @@
   // vedam-launch.js writes, and outranks the committed one.
   try {
     var c = JSON.parse(localStorage.getItem('vedamLaunchCfgV1') || 'null');
-    if (c && c.at && Date.now() - c.at < 24 * 60 * 60 * 1000 && typeof c.launchAt === 'string') {
+    if (c && c.at && Date.now() - c.at < 24 * 60 * 60 * 1000 && c.launchAt) {
       launchAt = c.launchAt;
     }
   } catch (e) {}

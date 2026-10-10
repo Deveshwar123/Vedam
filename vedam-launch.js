@@ -129,7 +129,11 @@
       .then(function (j) {
         if (!j || !j.ok) return api;
         var before = state.launchAt + '|' + mode();
-        if (typeof j.launchAt === 'string') state.launchAt = j.launchAt;
+        // An empty value from the server means "no date set there" — it must
+        // not wipe a date that is committed in launch-config.js, or an
+        // unconfigured backend would silently turn the countdown off.
+        // (So to have no date at all, clear it in BOTH places.)
+        if (typeof j.launchAt === 'string' && j.launchAt) state.launchAt = j.launchAt;
         if (j.collectionUrl) state.collectionUrl = j.collectionUrl;
         if (j.serverNow) {
           var sn = Date.parse(j.serverNow);
