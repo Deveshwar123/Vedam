@@ -26,6 +26,24 @@ The eleven existing pages each gained **two script tags and nothing else**
 
 ---
 
+## Current state (as deployed 10 Oct 2026)
+
+| | |
+|---|---|
+| **Mode** | `gate` — the whole site redirects to the waitlist |
+| **Launch** | Sat 17 Oct 2026, 8:30 pm CDT (`2026-10-18T01:30:00.000Z`) |
+| **Backend** | Apps Script "Vedam Waitlist", web app version 3 |
+| **Sheet** | "Vedam Waitlist" — tabs: `Waitlist`, `Email Log` |
+| **Mail** | Gmail / MailApp as the Vedam account (~100 recipients a day) |
+| **Portal** | `admin.html` → Waitlist & launch |
+
+To change the launch date, use the portal — no commit, no redeploy.
+**If you edit `waitlist-apps-script.gs`, the `/exec` URL keeps serving the old
+code until you publish a new version:** Deploy ▸ Manage deployments ▸ pencil ▸
+Version: *New version* ▸ Deploy. Saving in the editor alone changes nothing.
+
+---
+
 ## Setup, in order
 
 ### 1. Deploy the backend (~10 min, once)
