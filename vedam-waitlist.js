@@ -6,7 +6,7 @@
  *   2. the sign-up form: validation, honeypot, duplicate handling, states
  *   3. the switch to launch mode when the date passes — including while the
  *      page is sitting open, so a visitor watching the countdown reach zero
- *      sees the house open without touching anything
+ *      sees the collection open without touching anything
  *
  * The form sends only what the visitor typed, to the one Apps Script endpoint
  * in launch-config.js, over HTTPS. Nothing is stored in this browser except a
@@ -52,20 +52,38 @@
       if (cdNote) cdNote.textContent = openingLine();
     }
 
+    /**
+     * The launch is announced in IST, because that is the clock the house
+     * keeps and the one the announcement was made in. A visitor outside
+     * India also gets the same instant on their own clock, so nobody has to
+     * do the arithmetic.
+     */
     function openingLine() {
       var ms = L.launchMs;
       if (!ms) return '';
       var d = new Date(ms);
-      var opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' };
+      var opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                   hour: 'numeric', minute: '2-digit' };
+      var ist;
       try {
-        return 'Opening ' + d.toLocaleString(undefined, opts) + ' — your local time.';
-      } catch (e) { return 'Opening ' + d.toString(); }
+        ist = d.toLocaleString('en-IN', Object.assign({ timeZone: 'Asia/Kolkata' }, opts)) + ' IST';
+      } catch (e) {
+        return 'Final launch for order placements — ' + d.toString();
+      }
+      var line = 'Final launch for order placements — ' + ist;
+      try {
+        var here = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (here && here !== 'Asia/Kolkata') {
+          line += '  ·  ' + d.toLocaleString(undefined, opts) + ' your time';
+        }
+      } catch (e) {}
+      return line;
     }
 
     /* --------------------------- launch switch -------------------------- */
 
     /**
-     * While the house is closed in gate mode, every link into the rest of the
+     * While the site is closed in gate mode, every link into the rest of the
      * site would bounce the visitor straight back here. Hide those rather
      * than offer them: the nav keeps only the waitlist, and the wordmark
      * stops being a way out. They all come back at launch.
@@ -95,7 +113,7 @@
       if (!launched) paintCountdown();
       // Keep the <h1> honest for screen readers and the browser tab.
       var h1 = $('vwTitle');
-      if (h1) h1.textContent = launched ? 'The House Is Open' : 'Join the Waitlist';
+      if (h1) h1.textContent = launched ? 'The Collection Is Open' : 'Join the Waitlist';
       document.title = (launched ? 'The Collection Is Open' : 'Join the Waitlist') + ' — Vedam';
     }
 
@@ -202,7 +220,7 @@
           lastSent = sig;
           if (j && j.ok) {
             if (j.status === 'already') {
-              succeed('You are already on the waitlist — we have your place held. You will hear from us the moment the house opens.');
+              succeed('You are already on the waitlist — we have your place held. You will hear from us the moment it opens.');
             } else {
               succeed('Thank you — your place is held. A confirmation is on its way to your inbox.');
             }

@@ -639,7 +639,7 @@ function unsubscribePage_(p) {
     '<p style="color:rgba(240,225,190,.82);margin:0 0 28px">' + body + '</p>' +
     (site ? '<a href="' + esc_(site) + '" style="display:inline-block;font:11px/1 \'Jost\',Helvetica,Arial,sans-serif;' +
       'letter-spacing:.3em;text-transform:uppercase;color:#F3E6C8;background:#6A0F0C;border:1.5px solid #C9A15C;' +
-      'padding:15px 32px;text-decoration:none">Visit the house</a>' : '') +
+      'padding:15px 32px;text-decoration:none">Visit Vedam</a>' : '') +
     '</div></body></html>';
 
   return HtmlService.createHtmlOutput(html)
@@ -718,7 +718,6 @@ function shell_(innerHtml, footerNote, email) {
   '<tr><td align="center" style="padding:36px 16px">' +
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#F7ECDE;border:1px solid #C9A15C">' +
       '<tr><td align="center" style="background:#57131A;padding:34px 24px 30px">' +
-        '<div style="font:11px/1 Helvetica,Arial,sans-serif;letter-spacing:.42em;text-transform:uppercase;color:#C9A15C;margin-bottom:16px">The House of Vedam</div>' +
         '<div style="font:34px/1 Georgia,\'Times New Roman\',serif;letter-spacing:.3em;color:#F0E1BE;margin-left:.3em">VEDAM</div>' +
         '<div style="font:italic 14px/1.6 Georgia,serif;color:rgba(240,225,190,.75);margin-top:12px">Tradition Reimagined</div>' +
       '</td></tr>' +
@@ -762,9 +761,9 @@ function emailConfirm_(name, email) {
     '<p style="margin:0 0 18px">Dear ' + esc_(firstName_(name)) + ',</p>' +
     '<p style="margin:0 0 18px">Thank you for joining the Vedam waitlist. Your place is held.</p>' +
     '<p style="margin:0 0 18px">Every Vedam piece is made by hand — real zari, zardozi, handloom silk — ' +
-    'so the first collection opens in a limited number. You will hear from us ' +
-    (when ? 'on <b>' + esc_(when) + '</b>, when it opens' : 'the moment it opens') +
-    ', before it is announced anywhere else.</p>' +
+    'so the first collection opens in a limited number. ' +
+    (when ? 'Order placements open on <b>' + esc_(when) + '</b>' : 'You will hear from us the moment it opens') +
+    ', and you will hear from us before it is announced anywhere else.</p>' +
     rule_() +
     '<p style="margin:0;font-style:italic;color:#6B4A41">Until then, nothing is needed from you. ' +
     'We will write once with the launch, and only occasionally after that.</p>';
@@ -772,8 +771,8 @@ function emailConfirm_(name, email) {
   var text = 'Dear ' + firstName_(name) + ',\n\n' +
     'Thank you for joining the Vedam waitlist. Your place is held.\n\n' +
     'Every Vedam piece is made by hand, so the first collection opens in a limited number. ' +
-    'You will hear from us ' + (when ? 'on ' + when + ', when it opens' : 'the moment it opens') +
-    ', before it is announced anywhere else.\n\n' +
+    (when ? 'Order placements open on ' + when : 'You will hear from us the moment it opens') +
+    ', and you will hear from us before it is announced anywhere else.\n\n' +
     'Unsubscribe: ' + unsubscribeUrl_(email) + '\n— Vedam';
 
   return { subject: subject, html: shell_(inner, 'You joined the waitlist for the first Vedam collection.', email), text: text };
@@ -786,9 +785,8 @@ function emailLaunch_(name, email) {
 
   var inner =
     '<p style="margin:0 0 18px">Dear ' + esc_(firstName_(name)) + ',</p>' +
-    '<p style="margin:0 0 18px">The house is open. The first Vedam collection — ' +
-    'Śṛṅgāra bridal couture, Nizami Nights evening wear and Manduva heritage daywear — ' +
-    'is live, and you are seeing it first because you were on the waitlist.</p>' +
+    '<p style="margin:0 0 18px">The first Vedam collection is open, and you are ' +
+    'seeing it first because you were on the waitlist. Order placements are live now.</p>' +
     '<p style="margin:0 0 6px">Each piece is made to order for one person. ' +
     'Reserve the one you want and we will write to you about fabric, measurements and timeline.</p>' +
     (url ? btn_(url, 'View the collection') : '') +
@@ -796,8 +794,8 @@ function emailLaunch_(name, email) {
     '<p style="margin:0;font-style:italic;color:#6B4A41">Thank you for waiting with us.</p>';
 
   var text = 'Dear ' + firstName_(name) + ',\n\n' +
-    'The house is open. The first Vedam collection is live, and you are seeing it first ' +
-    'because you were on the waitlist.\n\n' + (url ? url + '\n\n' : '') +
+    'The first Vedam collection is open, and you are seeing it first because you were ' +
+    'on the waitlist. Order placements are live now.\n\n' + (url ? url + '\n\n' : '') +
     'Unsubscribe: ' + unsubscribeUrl_(email) + '\n— Vedam';
 
   return { subject: subject, html: shell_(inner, 'The collection you were waiting for is open.', email), text: text };
@@ -820,7 +818,9 @@ function emailCampaign_(name, email, subject, body) {
 }
 
 function prettyDate_(iso) {
-  var tz = PropertiesService.getScriptProperties().getProperty('DISPLAY_TZ') || Session.getScriptTimeZone() || 'Asia/Kolkata';
+  // The launch is announced in IST, so that is the clock every email quotes.
+  // Override with a DISPLAY_TZ script property if that ever changes.
+  var tz = PropertiesService.getScriptProperties().getProperty('DISPLAY_TZ') || 'Asia/Kolkata';
   try {
     return Utilities.formatDate(new Date(iso), tz, "d MMMM yyyy 'at' h:mm a") +
       ' (' + Utilities.formatDate(new Date(iso), tz, 'zzz') + ')';

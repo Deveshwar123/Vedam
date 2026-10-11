@@ -23,14 +23,14 @@ window.VEDAM_LAUNCH = {
    * An ISO 8601 instant. The simplest correct way to write it is with the
    * offset spelled out, so there is no doubt which clock it means:
    *
-   *     '2026-11-14T19:00:00+05:30'   7 pm India Standard Time
-   *     '2026-11-14T13:30:00Z'        the same moment, written in UTC
+   *     '2026-10-25T10:30:00+05:30'   10:30 am India Standard Time
+   *     '2026-10-25T05:00:00Z'         the same moment, written in UTC
    *
    * Leave it as '' (empty) until the date is decided: the site then shows
    * the waitlist and the sign-up form with no countdown, and says the date
    * is being announced soon. Nothing breaks, and no launch email can fire.
    * ------------------------------------------------------------------- */
-  launchAt: '2026-10-17T20:30:00-05:00',   // Sat 17 Oct 2026, 8:30 pm CDT
+  launchAt: '2026-10-25T10:30:00+05:30',   // Sun 25 Oct 2026, 10:30 am IST
 
   /* ---------------------------------------------------------------------
    * 2. THE BACKEND (Google Apps Script web app URL, ends in /exec)
