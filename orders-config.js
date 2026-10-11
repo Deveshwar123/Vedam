@@ -12,7 +12,7 @@ window.VEDAM_ORDERS = {
   /* The Orders Apps Script web app URL (ends in /exec). Paste it here after
    * deploying orders-apps-script.gs. Until it is filled in, checkout tells
    * customers to write to the house instead of silently losing their order. */
-  endpoint: '',
+  endpoint: 'https://script.google.com/macros/s/AKfycbynQ9H2ZYRq6gKzxKFTvUhOt7-rKr6ZkgA2jN9YR_7PsDwFgqtC8PGDP8KxbTFua07T9Q/exec',
 
   /* Where a customer lands to see an order. */
   myOrdersUrl: './my-orders.html',
