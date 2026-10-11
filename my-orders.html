@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Orders — Vedam</title>
+<meta name="description" content="Your Vedam orders — production progress, delivery estimates and shipping.">
+<meta name="theme-color" content="#57131A">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAkFBMVEWviWSacVGQY0eCXkKDU0GARkFuSDR0OzhyMjJtKSpqJSViNiljJiZPLSFlIiJkICBiISFhHh9fICFfHx9fHh5fHR1cHh5cHR1cHBxZHR1MHhtbGxxbGRpYGhpXGhtWGBlVGhpSGhlTGBhTFxdQFxdSFBZNFxdMFRVLFBVKExRFEhNGDxI/EBA8DA40CwwjCAj5Zb+QAAAK1klEQVR42j1Xh5a1rA7F3ntFVCzYsJz3f7t/M99dl5lxVEyyU0nI931Cfo88Fyq2g6XPMw/svnvO+fNO0/N+u78/9/l83yu2+32H6/dsbDmH53vv4yLf94zvk+7fMx/vK4r3++R9zFfZt7OU7wfCS14NZ/P7XPc2XWD5Hdv7Qur+vAd5PjnJfaISEp7nvSdQPPX4iJazeP/AQuKNXMX+XOJZNwXie275vSNbARAIjuukgAO65909b3+knMf3OK5DvF/bPiBW2+97gNO98eV+7zbf36nsh3onv28+ZE0hZMT3s9vKI6X3VNPnlULcyfS9PInFu08PwC592wP7uo7LKZaGFxP59lk+j3xemrTH82TrWfrxvVP5yFfuf/CHvlqfRLzybhO+cfn71n551uG9pk2AAbSESeSzn0cjZNMzel94d4HpK6/3WXjLB798955fbQ8jAMIk5V3QB0pDhfeY54vWAkCq5H3m9xP776O0XdchPuWwifs66+2+Kn+4r/X+FgHff+9ewzSSiJk2bdVmWZzXtEjLaaJjXFCax7GP3zr14zSNG8rYWCbZMDG6TPWyCLEsKy6UVFlWpHFSDUOTpfHfwn8fK8a/xPdwh784KcqsKpOmytIyTeI0S6q2aRkjLM3TtElK3NdpmpZx0YAHKEoIjk1L8VJc0wYC0qZkFTaSNMmSvGDTOJK+rcG6atIywzeUpW2qAHiQnxYe0RLvfwzSekyTIksLSITMMitySqeJjKxlbZW1oCybomZjk2Z/Gvix35tE8/8tcKNjrYiTVHGoWdvQkdKRNO3Amh7EZV2UBW1onf+hVn8hsTUzUcaI0zwvYOU8hnDYOi+bmqrVkHFiVQv4WVOUZcHSsscCgeN6laZ7GvHSzPMq0Dd/9CCm4wg0UKCmTUOWsaGNUjGJwYIWlalppsd6Td8cUnmupjcAwhnzHM9Xyiv8QJ8XI63rkZKZNUWVwCtg3oxj4+tE04jJNBKYRp/4pjbjFsyw7DLOsaBOPRbFWPypsNRFVhVxEsdFMY1Vkv0iPbB0WzcMw05017ENTbdhTUuzvzQt6lTZI61rRQ47kLaskqpCZKRF2xRp2spPsywr0EOXmKER2JpNTcNwLI38njyMFQCwUOQTbeZFRWLFkgxWSODiglMRaZ5FqBG6nqZFthZUlmUHYKp1e/3nD3UplA/hxYZUiMGqUhhUvGRWuNoat8hkMK/SDaobm+uagUV8Vwt4DjtC1zQuynqcwGKoSTWwAjpUKnrjzCHB7Wi3BU/YuHksUzO4Z8IzXqwFZ0DcCu7KAaCuZzGPbUnYGMdl+ZdRadzDBUFnXE4AFoHWhabuGKFO9MAOK7NzNOIylZwlhSfpstCyJE1ZIDzLVL2PN0gmhh10edU7xHgcy3Lwn7aZMwe2rgW6vcVxGCMom6JhjLKEIP6RhMhnBGC7afrrOJZpBInHtahzTNehGuWeZwam7Xq3YV9F3/MW0VAUNWVtRhiFA+N+dSHMvQ1981x/g6DMMr4pJE4+2+bmebrNfdeP9WDzAMvlPajGdhXIhaooUmaRv6UZRup7iVXY820HnzRNe+8i405ce3Z9F/6wtX9fOlXasGnhA3IhS4Zc0UZBZNual3nIgyC6w+jpdGkHMrKP3I40q3JdC/ahXQSn6C0yqS2HkSD8y6x+fp1u2I572nrpVaZu6IYZfHpAUzvqbFtHaHtAoAXUdRzd6H6/saZllrQLGTlryuX9fp9uOpaba0FYufYXBqYeGWFW2ZGp20Hw2LnnWvoMU+nG74dzUdVZ1nKyDKwcpvl4fpHKAWrqtV+b8hKAbkt+2XogRb06JnVDIAK9/vxw9s0oSe3Qr2TqUY4pVRwQ8I4761YYGvbd5KM07LfWohtBGgJYaJqT45ha9JP7TEcAzzI2EVXM2lZxeBUH15thToAXQzVI8zGCGyWNaXoX6Gbn/p8euQQOjINBi0qdoRbN1/eLDMsLqa7ZgU33a7sj1IChKkbYA9Wx81zT/H7vPKpMbBo2jHBjidWWqJHHbBtBoFte3tlwkx6gL/m07tvWUCMoKsEeOqbRBbY7rTXqCc6AAWYkPapxWhXN5ig/htQ2Hfp0QWCbSInX6CRywAyC6Lk9y7S7EDu6t9V1XpflMAwtWVCS67LlEOnAhiFEgBKNyRche1AfjQDdiOxC9XpyVRzbhoPjqKnbEVoQBl+0ZQsppo7NMA+7SPEITFyjDr78ewKGiOYqFizTigydN83IYMiWqIOp6HU7NxEFruvn9dxFXQfKT0pF131B0P0tmieeqzBYnWFuueIAG+BoR5gYnWWaluN5vkfHqYsiqQcf8ghrv3c9wF0+1yG24UmI6nSXlwNtR+XGquQ6PlR2M4GA1R1sqGndxia6d/O2jQb8GnUUvZ5n6TAuPraNFbFE2UgmRHKKTMTb3PuDYcMBhh0FzM/CPMeZ5KPKmWrHNHXdCfM/y5jLgFOxHYhYxmFSAGw7z4DQtm0Hqv8Cq3Y9P2SVnznGDwLwAXQMwdVWGLpjnNClqGSiXHy/3++xDRMnahh6jh39kFohCkiMFqXUbTyCKkSx+asJ6vPfMYtjF4KIaZgW1c79fh1OMQ3hFHwqXzUca7CqG5oaer0fwsLQNezbj9qVcufTfhwHQaPExYJb+cf3edT1k8cXaToiy3EtgvSR799mFH1/u/LY533hC7pZsoj1zwyLkH8wsP/KcxfyFxDFwSQ20gfd7Pu3qaRfx74s0yQEF+jWh/U8+DiOw4B+Wqp1XcsOTO/PJuYf/bdPE9RE54kF5ngcODLxOM5TkuM8xDoNagkhDrHPs5hm2BfZbROLGL/vEqDAu33fz2ufwW0YkciDwONFrus4lnmFu1vBl5VDm4GNqNcYQz4YDb2ysvMwTBNYL2LBgwKAgWQ9ruv8Q7CgwCuOuLRsGDgu2N8lIBg/0Kusa0ZIhnQgXf7I+bqdmHHIKdYNSuBZLMPQ903VgD/KLQS8EYm+GXzbYWzRzQ1oLAGVD73iII5tA4NjFcchtm1d121BhfmrU2DQs+W4ZfTdyuDjKIa2Bz0bOWe9wslBABUusoEcP8fK13MD/GmZ/ngwHFwHRgOJLmCg44qtlbcj+6c+vptAD48RcZ5gBCUWKAWuYlXy/xZDqGFQglEpVAfRoqyM/WFFtw6XXQrBCffK67mudb1XMB8aRIhQUQJh4yrOCVqPTbuMDOg5sK1iGBCCy4mQOS/SnH8D1Xcz+cGerC9OeG45nps3PBuayudVPPv984oVnQHmAin4muDLAwPgjbNRPGo6fBWbYxPrKK7podVynWLoi+MSmV815xJ7mCx5i2bqfsV9x+hICvEcvCIrXfn8KQyf6FtWjlK2/JwOcS5bWW7rdBX+Jmbu15gLp8Rv7+e9niHJMJodac+IYMCDCRFzKff7+16eTwzTLXcxwkhjXNGjngR+G4yur9w2ZARGSDR2/FqpuMlxjEXPB8yo6f0cgs6Qs/k5DLRfh5Shl267mOgla3+Z6cOTGwNqk2SVXw09OyTZ9/m8kU6YsVv5qgFybzYerycSsG3ljuGG7khmeW2D512DHz8fj7ctxiA6VxnF1Pa+O5Lw26ssKWc1Al8XAqtkl2z7ouQ89fHtNG3DVvRV0vfs2vi2XO973lPVkk1+sjhujLW8jyvGHzWrCg7rH8++Zp6PHmi9+DBty3RXmGS2S9zbIa9jZeJOy/8ALI2KZAIdlHMAAAAASUVORK5CYII=">
+
+<!-- The same four typefaces the rest of the site embeds (Prata, EB Garamond,
+     Jost, Pinyon Script), served from Google Fonts with real fallbacks. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap">
+
+<style>
+  /* ---- brand palette, lifted from the existing pages ---- */
+  :root {
+    --maroon-deep: #57131A;   --maroon: #6A0F0C;    --maroon-dark: #4A0F14;
+    --gold: #C9A15C;          --gold-2: #CBA14C;    --gold-hi: #E1B75C;
+    --cream: #F0E1BE;         --cream-2: #F3E6C8;   --cream-bg: #F7ECDE;
+    --terra: #A5341F;         --ink: #4A0F14;       --ink-2: #6B4A41;
+    --serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
+    --display: 'Prata', Georgia, serif;
+    --sans: 'Jost', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--maroon-deep); color: var(--cream);
+    font-family: var(--serif); -webkit-font-smoothing: antialiased;
+    min-height: 100vh; display: flex; flex-direction: column; overflow-x: clip;
+  }
+  a { color: var(--cream); text-decoration: none; }
+  ::selection { background: var(--gold-2); color: var(--cream-2); }
+
+  @keyframes cUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+  .up { animation: cUp .9s ease both; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important; scroll-behavior: auto !important;
+    }
+  }
+  /* Apple-HIG polish, matching the hig-overrides block on the other pages */
+  button, [role=button] { min-height: 44px; }
+  a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--gold-hi); outline-offset: 3px;
+  }
+  [hidden] { display: none !important; }
+
+  /* ---------------------------------- nav --------------------------------- */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 70;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 10px 18px; padding: clamp(14px, 2.4vh, 24px) clamp(18px, 4vw, 56px);
+    padding-top: calc(clamp(14px, 2.4vh, 24px) + env(safe-area-inset-top, 0px));
+  }
+  .wordmark {
+    font-family: var(--display); font-size: clamp(15px, 2.6vw, 19px);
+    letter-spacing: .3em; color: var(--cream-2); text-shadow: 0 1px 6px rgba(18,5,7,.65);
+  }
+  .navlinks {
+    display: flex; align-items: center; gap: clamp(12px, 3.2vw, 34px);
+    font-family: var(--sans); font-size: clamp(9px, 1.9vw, 11px);
+    letter-spacing: clamp(.14em, .5vw, .26em); text-transform: uppercase;
+  }
+  .navlinks a {
+    color: rgba(243,230,200,.92); padding-bottom: 4px;
+    border-bottom: 1px solid transparent;
+    transition: color .3s ease, border-color .3s ease;
+  }
+  .navlinks a:hover { color: var(--cream-2); border-bottom-color: rgba(225,183,92,.8); }
+  .navlinks a[aria-current=page] { color: var(--cream-2); border-bottom-color: var(--gold); }
+
+  /* --------------------------------- hero --------------------------------- */
+  header.hero {
+    padding: clamp(118px, 19vh, 186px) clamp(20px, 5vw, 72px) clamp(26px, 5vh, 54px);
+    text-align: center;
+    background: radial-gradient(120% 90% at 50% 34%, #641821 0%, #57131A 58%, #420D13 100%);
+  }
+  .eyebrow {
+    font-family: var(--sans); font-size: clamp(10px, 1.1vw, 12px);
+    letter-spacing: .5em; margin-left: .5em; text-transform: uppercase; color: var(--gold-2);
+  }
+  h1 {
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(40px, 7.2vw, 92px); letter-spacing: .08em;
+    margin: 18px 0 0; color: var(--cream);
+  }
+  .sub {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(16px, 1.6vw, 21px); line-height: 1.7;
+    margin: 22px auto 0; max-width: 46ch; color: rgba(240,225,190,.78);
+  }
+  .kolam { margin-top: 32px; }
+  .explore {
+    display: inline-flex; align-items: center; min-height: 44px; margin-top: 26px;
+    font-family: var(--sans); font-size: 10.5px; letter-spacing: .28em;
+    text-transform: uppercase; color: var(--cream);
+    border-bottom: 1px solid rgba(201,161,92,.55); padding: 6px 2px;
+    transition: color .3s ease, border-color .3s ease;
+  }
+  .explore:hover { color: var(--gold-hi); border-bottom-color: var(--gold-hi); }
+
+  /* ------------------------------- countdown ------------------------------ */
+  .countdown {
+    display: flex; justify-content: center; flex-wrap: wrap;
+    gap: clamp(10px, 2.4vw, 22px); margin: clamp(34px, 5vh, 52px) auto 0;
+  }
+  .unit {
+    min-width: clamp(74px, 17vw, 110px);
+    padding: clamp(14px, 2vw, 20px) clamp(8px, 1.6vw, 16px);
+    border: 1px solid rgba(201,161,92,.42);
+    background: linear-gradient(180deg, rgba(240,225,190,.07), rgba(240,225,190,.02));
+  }
+  .unit .n {
+    display: block; font-family: var(--display);
+    font-size: clamp(30px, 5.4vw, 50px); line-height: 1.05;
+    color: var(--cream); font-variant-numeric: tabular-nums;
+  }
+  .unit .l {
+    display: block; margin-top: 10px; font-family: var(--sans);
+    font-size: clamp(8.5px, 1vw, 10px); letter-spacing: .3em;
+    text-transform: uppercase; color: var(--gold-2);
+  }
+  .countnote {
+    font-family: var(--sans); font-size: clamp(10px, 1.1vw, 11.5px);
+    letter-spacing: .18em; text-transform: uppercase;
+    color: rgba(240,225,190,.6); margin: 26px auto 0; max-width: 54ch; line-height: 1.9;
+  }
+
+  /* ------------------------------ form panel ------------------------------ */
+  section.panel {
+    background: var(--cream-bg); color: var(--ink); flex: 1;
+    padding: clamp(60px, 9vh, 104px) clamp(20px, 5vw, 72px) clamp(70px, 10vh, 110px);
+  }
+  .panelwrap { max-width: 1080px; margin: 0 auto; display: grid; gap: clamp(30px, 4vw, 54px);
+               grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); align-items: start; }
+  .card {
+    background: var(--cream-bg); border: 1.5px solid var(--maroon);
+    padding: clamp(24px, 3.6vw, 44px);
+    box-shadow: 0 18px 44px rgba(74,15,20,.16);
+  }
+  .card h2 {
+    font-family: var(--display); font-weight: 400; font-size: clamp(22px, 2.6vw, 30px);
+    letter-spacing: .04em; color: var(--maroon); margin-bottom: 14px;
+  }
+  .card p { font-size: 16.5px; line-height: 1.75; color: var(--ink); }
+  .card p + p { margin-top: 14px; }
+  form { display: flex; flex-direction: column; gap: 26px; }
+  label.field { display: flex; flex-direction: column; gap: 9px; }
+  label.field > span {
+    font-family: var(--sans); font-size: 10.5px; letter-spacing: .28em;
+    text-transform: uppercase; color: var(--terra);
+  }
+  label.field input {
+    width: 100%; background: transparent; border: none;
+    border-bottom: 1.5px solid rgba(106,15,12,.4); border-radius: 0;
+    padding: 10px 2px; min-height: 44px;
+    font-family: var(--serif); font-size: 17px; color: var(--ink);
+    outline: none; transition: border-color .3s ease;
+  }
+  label.field input:focus { border-bottom-color: var(--maroon); }
+  label.field input::placeholder { color: rgba(74,15,20,.38); font-style: italic; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .msg { font-style: italic; font-size: 16px; line-height: 1.6; min-height: 1px; }
+  button.primary {
+    font-family: var(--sans); font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--cream-2); background: var(--maroon); border: 1.5px solid var(--maroon);
+    padding: 16px 34px; cursor: pointer; transition: background .3s ease;
+  }
+  button.primary:hover { background: var(--maroon-deep); }
+  button.primary:disabled { cursor: default; }
+  .req {
+    font-family: var(--sans); font-size: 10px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--ink-2);
+  }
+  .fineprint { font-size: 14.5px; line-height: 1.7; color: var(--ink-2); }
+  .fineprint a { color: var(--maroon); border-bottom: 1px solid rgba(106,15,12,.3); }
+  ul.promise { list-style: none; margin-top: 18px; }
+  ul.promise li {
+    position: relative; padding-left: 26px; margin-top: 13px;
+    font-size: 16px; line-height: 1.7; color: var(--ink);
+  }
+  ul.promise li::before {
+    content: ''; position: absolute; left: 4px; top: .72em;
+    width: 7px; height: 7px; background: var(--gold-2); transform: rotate(45deg);
+  }
+  .script {
+    font-family: 'Pinyon Script', 'EB Garamond', cursive; font-size: clamp(26px, 3.4vw, 36px);
+    color: var(--maroon); margin-top: 6px;
+  }
+  .thanks { text-align: center; }
+  .thanks .mark { color: var(--gold-2); font-size: 15px; letter-spacing: .7em; margin-bottom: 18px; }
+  .thanks h2 { color: var(--maroon); }
+  .joinednote {
+    margin-top: 16px; font-family: var(--sans); font-size: 10.5px;
+    letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2);
+  }
+
+  /* ----------------------------- launched state --------------------------- */
+  .openwrap { text-align: center; max-width: 620px; margin: 0 auto; }
+  .openwrap .cta {
+    display: inline-flex; align-items: center; min-height: 48px; margin-top: 30px;
+    font-family: var(--sans); font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+    color: var(--cream-2); background: var(--maroon); border: 1.5px solid var(--gold);
+    padding: 16px 38px; transition: background .3s ease;
+  }
+  .openwrap .cta:hover { background: var(--maroon-deep); }
+
+  /* --------------------------------- footer ------------------------------- */
+  footer {
+    background: var(--maroon-dark); color: var(--cream-2);
+    padding: clamp(60px, 8vh, 90px) clamp(20px, 5vw, 72px) 0; position: relative;
+  }
+  .fgrid {
+    max-width: 1180px; margin: 0 auto; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+    gap: clamp(36px, 5vw, 70px);
+  }
+  .fcol { display: flex; flex-direction: column; gap: 12px; font-size: 15.5px; }
+  .fcol .h {
+    font-family: var(--sans); font-size: 11px; letter-spacing: .28em;
+    text-transform: uppercase; color: rgba(243,230,200,.6); margin-bottom: 6px;
+  }
+  .fcol a { color: rgba(243,230,200,.88); }
+  .fcol a:hover { color: var(--cream-2); }
+  .fmark { font-family: var(--display); font-size: 30px; letter-spacing: .2em; }
+  .ftag { font-style: italic; font-size: 15px; line-height: 1.7; color: rgba(243,230,200,.75); max-width: 30ch; }
+  .fbar {
+    max-width: 1180px; margin: 56px auto 0; padding: 26px 0 40px;
+    border-top: 1px solid rgba(243,230,200,.25);
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px;
+    font-family: var(--sans); font-size: 11px; letter-spacing: .18em;
+    text-transform: uppercase; color: rgba(243,230,200,.6);
+  }
+  .fkolam {
+    height: 26px; margin: 0 calc(-1 * clamp(20px, 5vw, 72px));
+    background-image:
+      radial-gradient(circle at 50% 100%, rgba(243,230,200,.85) 2px, transparent 2.6px),
+      radial-gradient(circle at 50% 30%, rgba(243,230,200,.5) 1.2px, transparent 1.8px);
+    background-size: 28px 26px, 14px 26px; background-repeat: repeat-x;
+  }
+
+  /* ---- my orders ---- */
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 72px); }
+  section.panel { background: var(--cream-bg); color: var(--ink); flex: 1;
+                  padding: clamp(38px, 6vh, 64px) 0 clamp(60px, 9vh, 100px); }
+  .card { background: var(--cream-bg); border: 1.5px solid var(--maroon);
+          padding: clamp(20px, 3vw, 32px); box-shadow: 0 16px 40px rgba(74,15,20,.13); }
+  .card + .card { margin-top: 18px; }
+  .ohead { display: flex; flex-wrap: wrap; gap: 10px 20px; justify-content: space-between;
+           align-items: baseline; }
+  .oid { font-family: var(--sans); font-size: 11px; letter-spacing: .28em;
+         text-transform: uppercase; color: var(--terra); }
+  .odate { font-size: 14px; color: var(--ink-2); }
+  .opieces { font-family: var(--display); font-weight: 400; font-size: clamp(19px, 2.2vw, 24px);
+             color: var(--maroon); margin-top: 8px; line-height: 1.35; }
+  .orow { display: flex; flex-wrap: wrap; gap: 8px 26px; margin-top: 14px; font-size: 15px; color: var(--ink-2); }
+  .orow b { color: var(--ink); font-weight: normal; }
+  .pill { display: inline-block; font-family: var(--sans); font-size: 10px; letter-spacing: .16em;
+          text-transform: uppercase; padding: 4px 11px; border: 1px solid currentColor; }
+  .pill.paid { color: #2E6B3E; } .pill.pending { color: #8A5A00; }
+  .pill.failed { color: var(--terra); } .pill.cancelled { color: var(--ink-2); }
+  a.open { display: inline-flex; align-items: center; min-height: 44px; margin-top: 16px;
+           font-family: var(--sans); font-size: 10.5px; letter-spacing: .26em; text-transform: uppercase;
+           color: var(--maroon); border-bottom: 1px solid rgba(106,15,12,.4); padding: 6px 2px; }
+  a.open:hover { color: var(--maroon-deep); border-bottom-color: var(--maroon); }
+
+  /* the tracker */
+  .track { margin: 26px 0 6px; }
+  .tline { display: grid; gap: 0; grid-template-columns: repeat(7, 1fr); }
+  .tstep { text-align: center; position: relative; padding-top: 26px; }
+  .tstep::before { content: ''; position: absolute; top: 7px; left: 50%; right: -50%;
+                   height: 1.5px; background: rgba(106,15,12,.22); }
+  .tstep:last-child::before { display: none; }
+  .tdot { position: absolute; top: 0; left: 50%; transform: translateX(-50%) rotate(45deg);
+          width: 15px; height: 15px; background: var(--cream-bg);
+          border: 1.5px solid rgba(106,15,12,.3); }
+  .tstep.done .tdot { background: var(--gold-2); border-color: var(--gold-2); }
+  .tstep.done::before { background: var(--gold-2); }
+  .tstep.now .tdot { background: var(--maroon); border-color: var(--maroon);
+                     box-shadow: 0 0 0 4px rgba(106,15,12,.14); }
+  .tlabel { font-family: var(--sans); font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
+            color: rgba(74,15,20,.45); line-height: 1.45; padding: 0 2px; }
+  .tstep.done .tlabel { color: var(--ink-2); }
+  .tstep.now .tlabel { color: var(--maroon); font-weight: 500; }
+  @media (max-width: 720px) {
+    .tline { grid-template-columns: 1fr; gap: 0; }
+    .tstep { text-align: left; padding: 0 0 18px 28px; }
+    .tstep::before { top: 15px; bottom: -3px; left: 7px; right: auto; width: 1.5px; height: auto; }
+    .tstep:last-child::before { display: none; }
+    .tdot { left: 0; transform: rotate(45deg); top: 1px; }
+    .tlabel { font-size: 10.5px; letter-spacing: .14em; }
+  }
+
+  .detail dt { font-family: var(--sans); font-size: 10px; letter-spacing: .2em;
+               text-transform: uppercase; color: var(--terra); margin-top: 16px; }
+  .detail dd { margin: 4px 0 0; font-size: 16px; line-height: 1.7; color: var(--ink); white-space: pre-line; }
+  .items { margin-top: 10px; }
+  .item { border-top: 1px solid rgba(106,15,12,.16); padding: 14px 0; }
+  .item:first-child { border-top: 0; }
+  .item .n { font-family: var(--display); font-size: 17px; color: var(--ink); }
+  .item .s { font-size: 14.5px; color: var(--ink-2); margin-top: 4px; line-height: 1.6; }
+  .tot { display: flex; justify-content: space-between; border-top: 1.5px solid var(--maroon);
+         margin-top: 10px; padding-top: 12px; font-family: var(--display); font-size: 20px; color: var(--maroon); }
+  .est { font-size: 13.5px; color: var(--ink-2); margin-top: 8px; font-style: italic; }
+  .empty { text-align: center; padding: 56px 20px; }
+  .empty h2 { font-family: var(--display); font-weight: 400; font-size: 26px; color: var(--maroon); }
+  .empty p { margin-top: 12px; color: var(--ink-2); }
+  .cta { display: inline-flex; align-items: center; min-height: 48px; margin-top: 22px;
+         font-family: var(--sans); font-size: 11px; letter-spacing: .28em; text-transform: uppercase;
+         color: var(--cream-2); background: var(--maroon); border: 1.5px solid var(--gold); padding: 15px 34px; }
+  a.back { font-family: var(--sans); font-size: 10.5px; letter-spacing: .24em; text-transform: uppercase;
+           color: var(--ink-2); display: inline-block; margin-bottom: 18px; }
+  a.back:hover { color: var(--maroon); }
+</style>
+</head>
+<body>
+
+<nav aria-label="Navigation">
+  <a class="wordmark" href="./index.html">VEDAM</a>
+  <div class="navlinks">
+    <a href="./index.html">Home</a>
+    <a href="./collections.html">Collections</a>
+    <a href="./cart.html">Cart</a>
+    <a href="./my-orders.html" aria-current="page">My Orders</a>
+  </div>
+</nav>
+
+<header class="hero" style="padding-bottom:clamp(22px,4vh,42px)">
+  <div class="eyebrow up" style="animation-delay:.1s">VEDAM</div>
+  <h1 id="moTitle" class="up" style="animation-delay:.25s;font-size:clamp(34px,5.4vw,64px)">My Orders</h1>
+  <p class="sub up" id="moSub" style="animation-delay:.4s;font-size:clamp(15px,1.4vw,18px)">
+    Every piece, and exactly where it has got to.
+  </p>
+</header>
+
+<section class="panel" role="main">
+  <div class="wrap">
+    <div id="moLoading" class="empty"><p>Fetching your orders…</p></div>
+
+    <div id="moSignIn" class="empty" hidden>
+      <h2>Please sign in</h2>
+      <p>Your orders are tied to your Vedam account.</p>
+      <a class="cta" id="moSignInLink" href="./login.html">Sign in</a>
+    </div>
+
+    <div id="moNone" class="empty" hidden>
+      <h2>No orders yet</h2>
+      <p>When you order a piece, it will appear here with its progress.</p>
+      <a class="cta" href="./collections.html">Explore the collection</a>
+    </div>
+
+    <div id="moError" class="empty" hidden>
+      <h2>We could not reach the order desk</h2>
+      <p id="moErrorNote">Please try again in a moment.</p>
+    </div>
+
+    <div id="moList" hidden></div>
+    <div id="moDetail" hidden></div>
+  </div>
+</section>
+
+<footer>
+  <div class="fgrid">
+    <div class="fcol">
+      <div class="fmark">VEDAM</div>
+      <p class="ftag">Tradition Reimagined</p>
+      <div style="display:flex; gap:18px; margin-top:6px; font-family:var(--sans); font-size:11.5px; letter-spacing:.2em; text-transform:uppercase">
+        <a href="https://www.instagram.com/the.vedam/" target="_blank" rel="noopener">Instagram</a>
+      </div>
+    </div>
+    <div class="fcol" id="vwFootExplore">
+      <div class="h">Explore</div>
+      <a href="./index.html" data-gated>The Journey</a>
+      <a href="./collections.html#srngara" data-gated>Śṛṅgāra</a>
+      <a href="./our-story.html" data-gated>Our Story</a>
+    </div>
+    <div class="fcol">
+      <div class="h">Care</div>
+      <a href="./policies.html#shipping">Shipping &amp; Returns</a>
+      <a href="./policies.html#privacy">Privacy Policy</a>
+      <a href="./policies.html#terms">Terms</a>
+    </div>
+    <div class="fcol">
+      <div class="h">Contact</div>
+      <a href="mailto:vedavalavala08@gmail.com">vedavalavala08@gmail.com</a>
+    </div>
+  </div>
+  <div class="fbar">
+    <div>© 2026 Vedam. All rights reserved.</div>
+    <div>Made with love in India</div>
+  </div>
+  <div class="fkolam" aria-hidden="true"></div>
+</footer>
+
+<script src="./launch-config.js"></script>
+<script src="./vedam-gate.js"></script>
+<script src="./orders-config.js"></script>
+<script src="./vedam-launch.js"></script>
+<script type="module" src="./vedam-my-orders.js"></script>
+</body>
+</html>

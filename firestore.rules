@@ -78,6 +78,9 @@ service cloud.firestore {
     // admin.html can store its token: unmatched paths are denied by default,
     // so without it the portal falls back to a session-only token that has to
     // be pasted again on every visit.
+    // Holds the waitlist admin token and the orders admin token, one
+    // document each. Owner-only, so a customer — signed in or not — cannot
+    // read either of them.
     match /ownerSecrets/{doc} {
       allow read, write: if isOwner();
     }

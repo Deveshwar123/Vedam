@@ -9,6 +9,7 @@
 <!-- Same config file the site reads, so the portal and the pages can never
      disagree about which backend the waitlist talks to. -->
 <script src="./launch-config.js"></script>
+<script src="./orders-config.js"></script>
 <style>
   :root {
     --cream: #F7ECDE; --cream-2: #F3E6C8; --card: #FCF5EA;
@@ -154,6 +155,24 @@
   <div id="app">
     <h2>Today<span class="sub" id="asof"></span></h2>
     <div class="kpis" id="kpis"></div>
+
+    <!-- ========================= orders ========================= -->
+    <h2>Orders<span class="sub" id="odMode">the master sheet is where orders are managed — this is the view</span></h2>
+    <div class="kpis" id="odKpis"></div>
+    <p class="wlnote" id="odNote"></p>
+    <div class="wlrow" style="margin-top:12px">
+      <a class="btn" id="odSheet" href="#" target="_blank" rel="noopener">Open the Orders sheet ↗</a>
+      <button class="ghost" id="odReload" type="button">Reload</button>
+    </div>
+    <div class="tblwrap" style="margin-top:12px"><table id="odTbl">
+      <thead><tr>
+        <th scope="col">Order</th><th scope="col">Placed</th><th scope="col">Customer</th>
+        <th scope="col">Pieces</th><th scope="col" class="num">Total</th>
+        <th scope="col">Payment</th><th scope="col">Stage</th>
+        <th scope="col" class="num">Queue</th><th scope="col">Est. delivery</th>
+      </tr></thead>
+      <tbody><tr><td colspan="9" class="muted">Connect the orders backend to load.</td></tr></tbody>
+    </table></div>
 
     <!-- ====================== waitlist & launch ====================== -->
     <h2>Waitlist &amp; ordering<span class="sub" id="wlMode"></span></h2>
@@ -409,6 +428,7 @@ async function enter(u) {
   $("asof").textContent = "as of " + new Date().toLocaleString("en-IN", { day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" });
   render(users);
   wlEnter();
+  odEnter();
   const savedTok = localStorage.getItem("vedamAdminToken") || "";
   $("tok").value = savedTok;
   if (savedTok) loadInquiries();
@@ -944,6 +964,106 @@ wlEl("wlSendGo").addEventListener("click", async () => {
   } catch (e) { wlEl("wlCampNote").textContent = "Could not send: " + e.message; }
   b.disabled = false;
 });
+
+/* =======================================================================
+   orders — read only
+   -----------------------------------------------------------------------
+   The master sheet is the control centre: payments are confirmed there,
+   statuses moved there, delivery dates overridden there. This panel only
+   reports, so there is one place to manage an order and no chance of the
+   two disagreeing.
+   ======================================================================= */
+
+const OD = { url: "", token: "", rows: [] };
+
+async function odEnter() {
+  OD.url = ((window.VEDAM_ORDERS || {}).endpoint || "").trim();
+  const sheet = $("odSheet");
+  if (!OD.url) {
+    $("odNote").textContent =
+      "No orders backend yet. Deploy orders-apps-script.gs, then put its /exec URL into orders-config.js.";
+    odKpis(null);
+    return;
+  }
+  // The orders script keeps its own admin token, stored for the owner account
+  // beside the waitlist one.
+  try {
+    const snap = await getDoc(doc(db, "ownerSecrets", "orders"));
+    OD.token = (snap.exists() && snap.data().token) || "";
+  } catch (e) { OD.token = ""; }
+
+  if (!OD.token) {
+    $("odNote").innerHTML =
+      'Orders token not saved yet. Run <code>setupVedamOrders</code> in the Orders Apps Script, then store the token in Firestore at <code>ownerSecrets/orders</code> (field <code>token</code>).';
+    odKpis(null);
+    return;
+  }
+  odLoad();
+}
+
+async function odPost(action, extra) {
+  const res = await fetch(OD.url, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(Object.assign({ action, token: OD.token }, extra || {}))
+  });
+  return JSON.parse(await res.text());
+}
+
+async function odLoad() {
+  const tb = $("odTbl").tBodies[0];
+  tb.innerHTML = '<tr><td colspan="9" class="muted">Loading…</td></tr>';
+  try {
+    const j = await odPost("list");
+    if (!j.ok) throw new Error(j.error || "unknown error");
+    OD.rows = j.rows || [];
+    odKpis(j.stats);
+    odTable();
+  } catch (e) {
+    tb.innerHTML = '<tr><td colspan="9" class="muted">Could not load orders — ' + esc(e.message) + "</td></tr>";
+  }
+}
+
+function odKpis(st) {
+  const t = (v, l) => `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  if (!st) { $("odKpis").innerHTML = t("—", "orders not connected"); return; }
+  $("odKpis").innerHTML =
+    t(st.total, "orders") +
+    t(st.awaitingPayment, "awaiting payment") +
+    t(st.inQueue, "in the queue") +
+    t(st.inProduction, "being made") +
+    t(st.shipped + st.delivered, "shipped or delivered") +
+    t(inr(st.revenue), "confirmed revenue");
+  const bits = [];
+  if (st.pendingValue) bits.push(inr(st.pendingValue) + " awaiting payment confirmation");
+  if (st.cancelled) bits.push(st.cancelled + " cancelled");
+  bits.push("payments are confirmed and statuses moved in the Orders sheet, not here");
+  $("odNote").textContent = bits.join(" · ");
+}
+
+function odTable() {
+  const rows = OD.rows.slice().sort((a, b) =>
+    Date.parse(b["Order Date"] || 0) - Date.parse(a["Order Date"] || 0));
+  const pill = (v) => {
+    const s = String(v || "");
+    const cls = s === "Paid" ? "done" : s === "Failed" ? "new" : "";
+    return `<span class="pill ${cls}">${esc(s || "—")}</span>`;
+  };
+  $("odTbl").tBodies[0].innerHTML = rows.length ? rows.map((r) => `<tr>
+      <td>${esc(r["Order ID"])}</td>
+      <td>${esc(wlDate(r["Order Date"]))}</td>
+      <td>${esc(r["Customer Name"] || "—")}<div class="muted" style="font-size:12px">${esc(r["Customer Email"] || "")}</div></td>
+      <td class="cartitems">${esc(String(r["Products Ordered"] || "—")).replace(/\n/g, "<br>")}</td>
+      <td class="num">${inr(r["Total Amount"])}</td>
+      <td>${pill(r["Payment Status"])}</td>
+      <td>${esc(r["Order Status"] || "—")}</td>
+      <td class="num">${r["Queue Position"] ? "#" + r["Queue Position"] : "—"}</td>
+      <td>${esc(r["Estimated Delivery Date"] ? wlDate(r["Estimated Delivery Date"]).split(",")[0] : "—")}</td>
+    </tr>`).join("")
+    : '<tr><td colspan="9" class="muted">No orders yet.</td></tr>';
+}
+
+$("odReload").addEventListener("click", odLoad);
 
 /* ---------- chart tooltip ---------- */
 const tip = $("tip");

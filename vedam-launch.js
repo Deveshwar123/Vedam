@@ -28,6 +28,7 @@
 
   var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   var ON_WAITLIST_PAGE = page === 'waitlist.html';
+  var ON_ORDERS_PAGE = page === 'my-orders.html' || page === 'checkout.html';
   // Gate mode (hiding the site before launch) is decided once, in
   // vedam-gate.js, which runs in <head> before the page paints. This file
   // only dresses the pages that are allowed to render.
@@ -170,6 +171,32 @@
     model.parentNode.insertBefore(a, model.nextSibling);
   }
 
+  /** My Orders belongs in the nav only once somebody is signed in — it is
+   *  meaningless to a visitor, and the site already remembers who is here. */
+  function ordersLink() {
+    var nav = document.querySelector('nav');
+    if (!nav || document.getElementById('vdOrdersNav')) return;
+    var signedIn = false;
+    try { signedIn = !!JSON.parse(localStorage.getItem('vedamUserV1')); } catch (e) {}
+    if (!signedIn) return;
+    var links = nav.querySelectorAll('a[href*="cart.html"], a[href*="collections.html"]');
+    var model = links[links.length - 1];
+    if (!model || !model.parentNode) return;
+    var a = model.cloneNode(false);
+    a.id = 'vdOrdersNav';
+    a.href = './my-orders.html';
+    a.textContent = 'My Orders';
+    model.parentNode.insertBefore(a, model.nextSibling);
+  }
+
+  function syncOrdersNav() {
+    var a = document.getElementById('vdOrdersNav');
+    var signedIn = false;
+    try { signedIn = !!JSON.parse(localStorage.getItem('vedamUserV1')); } catch (e) {}
+    if (signedIn && !ON_ORDERS_PAGE) { if (!a) ordersLink(); }
+    else if (a) a.parentNode.removeChild(a);
+  }
+
   function syncNav() {
     var a = document.getElementById('vdWaitlistNav');
     // The waitlist outlives the opening of ordering — it carries on for the
@@ -270,6 +297,7 @@
 
   function start() {
     syncNav();
+    syncOrdersNav();
     buildBar();
     paintBar();
     keepAlive();
@@ -297,6 +325,7 @@
         raf = requestAnimationFrame(function () {
           raf = 0;
           syncNav();
+          syncOrdersNav();
           if (bar && !bar.hidden && !bar.isConnected) { document.body.appendChild(bar); }
           paintBar();
         });
@@ -304,7 +333,7 @@
     } catch (e) {}
   }
 
-  listeners.push(function () { syncNav(); paintBar(); });
+  listeners.push(function () { syncNav(); syncOrdersNav(); paintBar(); });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', start);
