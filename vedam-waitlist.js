@@ -53,10 +53,9 @@
     }
 
     /**
-     * The launch is announced in IST, because that is the clock Vedam
-     * keeps and the one the announcement was made in. A visitor outside
-     * India also gets the same instant on their own clock, so nobody has to
-     * do the arithmetic.
+     * One time, in IST — the clock Vedam keeps and the one the launch was
+     * announced in. The countdown above it already tells every visitor how
+     * long they have, whatever timezone they are in.
      */
     function openingLine() {
       var ms = L.launchMs;
@@ -64,20 +63,12 @@
       var d = new Date(ms);
       var opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
                    hour: 'numeric', minute: '2-digit' };
-      var ist;
       try {
-        ist = d.toLocaleString('en-IN', Object.assign({ timeZone: 'Asia/Kolkata' }, opts)) + ' IST';
+        return 'Final launch for order placements — ' +
+          d.toLocaleString('en-IN', Object.assign({ timeZone: 'Asia/Kolkata' }, opts)) + ' IST';
       } catch (e) {
         return 'Final launch for order placements — ' + d.toString();
       }
-      var line = 'Final launch for order placements — ' + ist;
-      try {
-        var here = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (here && here !== 'Asia/Kolkata') {
-          line += '  ·  ' + d.toLocaleString(undefined, opts) + ' your time';
-        }
-      } catch (e) {}
-      return line;
     }
 
     /* --------------------------- launch switch -------------------------- */
