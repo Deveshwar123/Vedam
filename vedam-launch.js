@@ -1,7 +1,8 @@
 /**
- * Vedam — shared launch state  (loaded by every page)
+ * Vedam — shared ordering state  (loaded by every page)
  * ===========================================================================
- * Answers one question for the whole site: is the collection open yet?
+ * VEDAM is live and every page is public. The one question this answers is
+ * whether ORDERING has opened yet.
  *
  *   • resolves the launch date (server value wins over launch-config.js)
  *   • corrects for a visitor's wrong device clock using the server's time
@@ -171,10 +172,12 @@
 
   function syncNav() {
     var a = document.getElementById('vdWaitlistNav');
-    if (mode() === 'waitlist' && !ON_WAITLIST_PAGE) {
+    // The waitlist outlives the opening of ordering — it carries on for the
+    // next collection — so the link stays in the nav either way.
+    if (!ON_WAITLIST_PAGE) {
       if (!a) navLink();
     } else if (a) {
-      a.parentNode.removeChild(a);        // after launch there is nothing to wait for
+      a.parentNode.removeChild(a);
     }
   }
 
@@ -248,20 +251,20 @@
     if (!bar) return;
     var cta = document.getElementById('vdLaunchBarCta');
     if (mode() === 'launched') {
-      barText.textContent = 'The first collection is open';
+      barText.textContent = 'Ordering is now open';
       cta.textContent = 'View the collection';
       cta.href = state.collectionUrl;
       if (tick) { clearInterval(tick); tick = null; }
       return;
     }
     if (!api.hasDate) {
-      barText.textContent = 'The first collection is coming';
+      barText.textContent = 'Ordering opens soon';
     } else {
       var p = parts(msLeft());
-      barText.textContent = 'The first collection opens in ' +
+      barText.textContent = 'Ordering opens in ' +
         (p.d > 0 ? p.d + 'd ' : '') + p.h + 'h ' + p.m + 'm ' + p.s + 's';
     }
-    cta.textContent = api.joined ? 'You are on the waitlist' : 'Join the waitlist';
+    cta.textContent = api.joined ? 'You are on the waitlist' : 'Be first to order';
     cta.href = './waitlist.html';
   }
 

@@ -5,7 +5,7 @@
  *
  *   • stores signups in a Google Sheet (the database)
  *   • sends the confirmation email the moment somebody joins
- *   • sends the launch announcement once, to everybody, when the launch
+ *   • sends the "ordering is open" announcement once, to everybody, when the
  *     date arrives (a time trigger does it even if nobody is on the site)
  *   • sends owner-written campaigns to the list
  *   • serves the launch date/mode to the site, so the countdown and the
@@ -763,45 +763,49 @@ function emailConfirm_(name, email) {
   var inner =
     '<p style="margin:0 0 18px">Dear ' + esc_(firstName_(name)) + ',</p>' +
     '<p style="margin:0 0 18px">Thank you for joining the Vedam waitlist. Your place is held.</p>' +
+    '<p style="margin:0 0 18px">Vedam is open now — you can explore every collection today. ' +
+    'What opens later is <b>ordering</b>, and this list is how you will hear of it.</p>' +
     '<p style="margin:0 0 18px">Every Vedam piece is made by hand — real zari, zardozi, handloom silk — ' +
     'so the first collection opens in a limited number. ' +
     (when ? 'Order placements open on <b>' + esc_(when) + '</b>' : 'You will hear from us the moment it opens') +
     ', and you will hear from us before it is announced anywhere else.</p>' +
     rule_() +
-    '<p style="margin:0;font-style:italic;color:#6B4A41">Until then, nothing is needed from you. ' +
-    'We will write once with the launch, and only occasionally after that.</p>';
+    '<p style="margin:0;font-style:italic;color:#6B4A41">Nothing is needed from you until then. ' +
+    'We will write once when ordering opens, and only occasionally after that.</p>';
 
   var text = 'Dear ' + firstName_(name) + ',\n\n' +
     'Thank you for joining the Vedam waitlist. Your place is held.\n\n' +
+    'Vedam is open now — you can explore every collection today. What opens later is ' +
+    'ordering, and this list is how you will hear of it.\n\n' +
     'Every Vedam piece is made by hand, so the first collection opens in a limited number. ' +
     (when ? 'Order placements open on ' + when : 'You will hear from us the moment it opens') +
     ', and you will hear from us before it is announced anywhere else.\n\n' +
     'Unsubscribe: ' + unsubscribeUrl_(email) + '\n— Vedam';
 
-  return { subject: subject, html: shell_(inner, 'You joined the waitlist for the first Vedam collection.', email), text: text };
+  return { subject: subject, html: shell_(inner, 'You joined the Vedam waitlist to be told when ordering opens.', email), text: text };
 }
 
 function emailLaunch_(name, email) {
   var props = PropertiesService.getScriptProperties();
   var url = props.getProperty('COLLECTION_URL') || props.getProperty('SITE_URL') || '';
-  var subject = 'The first Vedam collection is open';
+  var subject = 'Ordering is now open at Vedam';
 
   var inner =
     '<p style="margin:0 0 18px">Dear ' + esc_(firstName_(name)) + ',</p>' +
-    '<p style="margin:0 0 18px">The first Vedam collection is open, and you are ' +
-    'seeing it first because you were on the waitlist. Order placements are live now.</p>' +
+    '<p style="margin:0 0 18px">Ordering is now open. You are hearing it first ' +
+    'because you were on the waitlist — nobody outside it has been written to.</p>' +
     '<p style="margin:0 0 6px">Each piece is made to order for one person. ' +
     'Reserve the one you want and we will write to you about fabric, measurements and timeline.</p>' +
-    (url ? btn_(url, 'View the collection') : '') +
+    (url ? btn_(url, 'Place your order') : '') +
     rule_() +
     '<p style="margin:0;font-style:italic;color:#6B4A41">Thank you for waiting with us.</p>';
 
   var text = 'Dear ' + firstName_(name) + ',\n\n' +
-    'The first Vedam collection is open, and you are seeing it first because you were ' +
-    'on the waitlist. Order placements are live now.\n\n' + (url ? url + '\n\n' : '') +
+    'Ordering is now open. You are hearing it first because you were on the waitlist — ' +
+    'nobody outside it has been written to.\n\n' + (url ? url + '\n\n' : '') +
     'Unsubscribe: ' + unsubscribeUrl_(email) + '\n— Vedam';
 
-  return { subject: subject, html: shell_(inner, 'The collection you were waiting for is open.', email), text: text };
+  return { subject: subject, html: shell_(inner, 'Ordering is open at Vedam.', email), text: text };
 }
 
 /**

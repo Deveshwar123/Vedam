@@ -156,7 +156,7 @@
     <div class="kpis" id="kpis"></div>
 
     <!-- ====================== waitlist & launch ====================== -->
-    <h2>Waitlist &amp; launch<span class="sub" id="wlMode"></span></h2>
+    <h2>Waitlist &amp; ordering<span class="sub" id="wlMode"></span></h2>
 
     <!-- The list lives in the Apps Script sheet, behind an admin token. The
          token is kept in Firestore under ownerSecrets/waitlist, which the
@@ -175,7 +175,7 @@
 
     <div class="kpis" id="wlKpis"></div>
 
-    <h2>Launch date<span class="sub">drives the countdown, the site switch and the announcement email</span></h2>
+    <h2>Ordering opens<span class="sub">drives the countdown, unlocks ordering on the site, and sends the announcement</span></h2>
     <div class="card">
       <div class="wlrow">
         <label for="wlWhen">Opens at</label>
@@ -190,13 +190,13 @@
       </div>
       <p class="wlnote" id="wlWhenNote">—</p>
       <p class="wlnote">Times are read in <b>this device's</b> timezone and stored as an exact instant, so the countdown is the same for every visitor. Saving a date needs no site redeploy.</p>
-      <p class="wlnote"><b>The launch email only fires on the date saved here</b> — the date in <code>launch-config.js</code> drives the countdown but not the email. Clearing the date here falls back to the one in that file; to have no date at all, clear it in both.</p>
+      <p class="wlnote"><b>The announcement only fires on the date saved here</b> — the date in <code>launch-config.js</code> drives the countdown and the buttons, but not the email. Clearing the date here falls back to the one in that file; to have no date at all, clear it in both.</p>
 
       <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--line)">
-        <button class="danger" id="wlLaunchNow" type="button">Send launch announcement now</button>
+        <button class="danger" id="wlLaunchNow" type="button">Open ordering now &amp; announce</button>
         <span class="wlnote" id="wlLaunchNote" style="margin-left:10px"></span>
         <div class="confirmbox" id="wlLaunchConfirm">
-          <b>This emails every subscriber who has not had the announcement yet.</b>
+          <b>This opens ordering immediately and emails every subscriber who has not been told yet.</b>
           It cannot be undone, and it is sent once per person — nobody gets it twice.
           <div><input type="text" id="wlLaunchWord" placeholder="Type SEND" autocomplete="off">
           <button class="danger" id="wlLaunchGo" type="button">Send it</button>
@@ -297,9 +297,9 @@ Vedam's letterhead, the greeting with their first name and the unsubscribe link 
         </ul>
       </div>
       <div class="card">
-        <h3>What happens on launch day</h3>
+        <h3>What happens when ordering opens</h3>
         <ul>
-          <li>The moment the date passes, every page opens by itself — nothing to push or click.</li>
+          <li>The moment the date passes, every piece becomes orderable by itself — nothing to push or click.</li>
           <li>Within 15 minutes the announcement goes to everyone on the waitlist, in batches, and each person is marked as sent — <b>nobody is emailed twice</b>, even if a send fails or the daily quota runs out partway.</li>
           <li>Watch <b>launch emails sent / pending</b> in the tiles above. Pending clears itself; a failure can be re-sent from the ⋯ button on that person's row.</li>
           <li>To open early, use <b>Send launch announcement now</b>. It cannot be undone.</li>
@@ -317,7 +317,7 @@ Vedam's letterhead, the greeting with their first name and the unsubscribe link 
         <h3>Open items</h3>
         <ul>
           <li><b>Before the launch:</b> deploy the waitlist Apps Script, put its <code>/exec</code> URL into <code>launch-config.js</code>, publish the <code>ownerSecrets</code> rule in Firestore, then set the launch date above. Steps in <a href="https://github.com/Deveshwar123/Vedam/blob/main/WAITLIST.md" target="_blank" rel="noopener">WAITLIST.md</a>.</li>
-          <li>The site is <b>closed to visitors</b> until the launch date — every page sends them to the waitlist. Add <code>?preview=1</code> to any page to look around yourself.</li>
+          <li>VEDAM is <b>live and public</b>. What the waitlist controls is <b>ordering</b>: until the date above, pieces show “Join the Waitlist” instead of “Add to Cart”.</li>
           <li>Policies page still needs the <b>legal entity name, registered address, phone number and named grievance officer</b> (required by the E-Commerce Rules 2020) — only the email is published so far.</li>
           <li>Policy copy should get a lawyer’s once-over before it is relied on.</li>
           <li>Optional hardening: restrict the Firebase browser API key to <code>deveshwar123.github.io/*</code> in Google Cloud console.</li>
@@ -717,8 +717,8 @@ function wlKpis(st) {
     t(st.total, "on the waitlist") +
     t(st.subscribed, "subscribed") +
     t(st.week, "joined, last 7 days") +
-    t(st.launchSent, "launch emails sent") +
-    t(st.launchPending, "launch emails pending") +
+    t(st.launchSent, "told ordering is open") +
+    t(st.launchPending, "still to be told") +
     t(st.quotaLeft < 0 ? "—" : st.quotaLeft, "emails left today");
 
   const bits = [];
@@ -734,8 +734,8 @@ function wlKpis(st) {
 function wlPaintLaunch(st) {
   if (!st) return;
   const launched = st.mode === "launched";
-  wlEl("wlMode").textContent = launched ? "the collection is open" :
-    (st.launchAt ? "waitlist mode — counting down" : "waitlist mode — no date set yet");
+  wlEl("wlMode").textContent = launched ? "ordering is open" :
+    (st.launchAt ? "ordering opens soon — counting down" : "ordering date not set yet");
 
   if (st.launchAt) {
     const d = new Date(st.launchAt);
@@ -747,16 +747,16 @@ function wlPaintLaunch(st) {
     const days = Math.floor(Math.abs(ms) / 864e5);
     const hrs = Math.floor(Math.abs(ms) % 864e5 / 36e5);
     wlEl("wlWhenNote").innerHTML = launched
-      ? "Opened <b>" + esc(wlDate(st.launchAt)) + "</b> — " + days + "d " + hrs + "h ago. The site is in launch mode."
-      : "Opens <b>" + esc(wlDate(st.launchAt)) + "</b> — " + days + "d " + hrs + "h from now.";
+      ? "Ordering opened <b>" + esc(wlDate(st.launchAt)) + "</b> — " + days + "d " + hrs + "h ago."
+      : "Ordering opens <b>" + esc(wlDate(st.launchAt)) + "</b> — " + days + "d " + hrs + "h from now.";
   } else {
     wlEl("wlWhen").value = "";
-    wlEl("wlWhenNote").textContent = "No date set. The site shows the waitlist with no countdown, and no launch email can go out.";
+    wlEl("wlWhenNote").textContent = "No date set. The site shows no countdown and ordering stays closed; no announcement can go out.";
   }
   if (st.collectionUrl) wlEl("wlUrl").value = st.collectionUrl;
   wlEl("wlLaunchNote").textContent = launched
     ? st.launchPending + " subscriber" + (st.launchPending === 1 ? "" : "s") + " still to receive it"
-    : "The date has not passed — sending now opens the collection early.";
+    : "The date has not passed — this opens ordering early, for everyone.";
 }
 
 wlEl("wlSaveWhen").addEventListener("click", async () => {

@@ -1,69 +1,85 @@
 /**
- * Vedam — the pre-launch gate  (must load in <head>, before anything renders)
+ * Vedam — ordering state  (must load in <head>, before anything renders)
  * ===========================================================================
- * Before the launch date, the site is closed: every page sends visitors to
- * waitlist.html. After it, this file does nothing at all and the site behaves
- * exactly as it always has.
+ * VEDAM is live. The website is open to everyone — browse the brand, the
+ * collections and every piece. What is not yet open is *ordering*, and the
+ * waitlist exists to tell people the moment it is.
  *
- * It runs in the <head>, synchronously, on purpose. Redirecting later — from
- * the foot of the page, or after the bundle unpacks — would let the real site
- * paint for a moment first, which is precisely what a closed site must not
- * show.
+ * This file is the single source of truth for "can somebody order yet?", and
+ * it runs in the <head> so the answer is already known when the collection
+ * pages build their buttons. Without that, a piece would render "Add to Cart"
+ * for a frame before correcting itself.
  *
- * ---------------------------------------------------------------------------
- * WHAT THIS IS AND IS NOT
- * ---------------------------------------------------------------------------
- * This hides the site from visitors. It is NOT access control: every page on
- * a GitHub Pages site is a public file, so somebody who disables JavaScript or
- * reads the page source can still reach the collection markup. For a soft
- * launch that is the right trade — the pages stay deployed, indexed and ready,
- * and open by themselves on the day. If the collection must be truly
- * unreachable before launch, the only way is to keep those pages out of the
- * published branch until the date.
+ *   window.VedamOrdering.isOpen()   -> true once ordering has opened
+ *   window.VedamOrdering.opensAt()  -> ms timestamp, or 0 if no date is set
+ *   window.VedamOrdering.msLeft()   -> ms until it opens (Infinity if no date)
  *
- * Owner preview: add ?preview=1 to any page to look at the real site while the
- * gate is up. It lasts for that browser tab only.
+ * It also still carries the pre-launch gate, which is switched OFF now that
+ * the brand has launched (launch-config.js: preLaunchMode 'bar'). The code is
+ * kept because it costs nothing and makes a future closed-door drop a
+ * one-word change rather than a rebuild.
  * ===========================================================================
  */
 (function () {
   'use strict';
 
   var CFG = window.VEDAM_LAUNCH || {};
+
+  /** The instant ordering opens: the server's value if the owner has changed
+   *  it in the portal (cached by vedam-launch.js), else the committed one. */
+  function resolveOpensAt() {
+    var at = typeof CFG.launchAt === 'string' ? CFG.launchAt.trim() : '';
+    try {
+      var c = JSON.parse(localStorage.getItem('vedamLaunchCfgV1') || 'null');
+      if (c && c.at && Date.now() - c.at < 24 * 60 * 60 * 1000 && c.launchAt) at = c.launchAt;
+    } catch (e) {}
+    var t = at ? Date.parse(at) : NaN;
+    return isNaN(t) ? 0 : t;
+  }
+
+  window.VedamOrdering = {
+    opensAt: resolveOpensAt,
+    /** No date set means "not open yet" — never "open". */
+    isOpen: function () {
+      var t = resolveOpensAt();
+      return !!t && Date.now() >= t;
+    },
+    msLeft: function () {
+      var t = resolveOpensAt();
+      return t ? t - Date.now() : Infinity;
+    },
+    /** Runs fn when ordering opens, and once immediately. Used by the
+     *  collection pages so a visitor sitting on a piece at 10:30 sees the
+     *  button become live without reloading. */
+    watch: function (fn) {
+      var stopped = false;
+      function tick() {
+        if (stopped) return;
+        var open = window.VedamOrdering.isOpen();
+        try { fn(open); } catch (e) {}
+        if (open) return;
+        var left = window.VedamOrdering.msLeft();
+        setTimeout(tick, Math.min(Math.max(isFinite(left) ? left : 60000, 1000), 60000));
+      }
+      tick();
+      return function () { stopped = true; };
+    }
+  };
+
+  /* ------------------------- the pre-launch gate -------------------------
+   * Off while preLaunchMode is 'bar'. Set it to 'gate' to close the whole
+   * site behind the waitlist again (see launch-config.js).
+   * --------------------------------------------------------------------- */
   if (CFG.preLaunchMode !== 'gate') return;
 
   var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-
-  // The waitlist is the destination; the owner portal is how the launch is
-  // run; the policies page carries the privacy notice that the waitlist form
-  // and every email link to, so it has to stay reachable.
   if (page === 'waitlist.html' || page === 'admin.html' || page === 'policies.html') return;
 
-  // Owner preview, remembered for this tab so links keep working while
-  // looking around.
   try {
     if (/[?&]preview=1\b/.test(location.search)) sessionStorage.setItem('vedamPreview', '1');
     if (sessionStorage.getItem('vedamPreview') === '1') return;
   } catch (e) {}
 
-  var launchAt = typeof CFG.launchAt === 'string' ? CFG.launchAt.trim() : '';
-
-  // A date the owner set in the portal reaches this device through the cache
-  // vedam-launch.js writes, and outranks the committed one.
-  try {
-    var c = JSON.parse(localStorage.getItem('vedamLaunchCfgV1') || 'null');
-    if (c && c.at && Date.now() - c.at < 24 * 60 * 60 * 1000 && c.launchAt) {
-      launchAt = c.launchAt;
-    }
-  } catch (e) {}
-
-  var t = launchAt ? Date.parse(launchAt) : NaN;
-
-  // No date set yet still means "not open". An unreadable date is treated as
-  // open rather than locking the whole site behind a typo.
-  var closed = !launchAt || (!isNaN(t) && Date.now() < t);
-  if (!closed) return;
-
-  // replace(), not assign(): Back from the waitlist must not bounce the
-  // visitor straight back into the gate.
+  if (window.VedamOrdering.isOpen()) return;
   location.replace('./waitlist.html');
 })();

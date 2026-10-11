@@ -39,7 +39,7 @@
       if (!cd) return;
       if (!L.hasDate) {
         cd.style.display = 'none';
-        if (cdNote) cdNote.textContent = 'The opening date is being set — join the waitlist and you will be the first to know it.';
+        if (cdNote) cdNote.textContent = 'The date ordering opens is being set — join the waitlist and you will be the first to know it.';
         return;
       }
       cd.style.display = '';
@@ -92,20 +92,41 @@
       if (mark) mark.setAttribute('href', closed ? './waitlist.html' : './index.html');
     }
 
+    /**
+     * Two states, and the sign-up form lives in both. Before ordering opens
+     * the page is a countdown; afterwards it says so and keeps taking names
+     * for the next collection, which is why the form is never hidden.
+     */
     function paintMode() {
       var launched = L.mode === 'launched';
       paintGatedLinks(launched);
       var show = function (id, on) { var el = $(id); if (el) el.hidden = !on; };
-      show('vwWaiting', !launched);
+
+      show('vwWaiting', true);          // the form stays, in both states
       show('vwOpen', launched);
+      var cd = $('vwCountdown');
+      if (cd && launched) cd.style.display = 'none';
+
       var cta = $('vwOpenCta');
       if (cta) cta.href = L.collectionUrl;
       if (launched && timer) { clearInterval(timer); timer = null; }
       if (!launched) paintCountdown();
-      // Keep the <h1> honest for screen readers and the browser tab.
-      var h1 = $('vwTitle');
-      if (h1) h1.textContent = launched ? 'The Collection Is Open' : 'Join the Waitlist';
-      document.title = (launched ? 'The Collection Is Open' : 'Join the Waitlist') + ' — Vedam';
+
+      var set = function (id, text) { var el = $(id); if (el) el.textContent = text; };
+      if (launched) {
+        set('vwTitle', 'Ordering Is Open');
+        set('vwSub', 'Every Vedam piece is made to order. The waitlist stays open for the next collection — add your name and you will hear first.');
+        set('vwExplore', 'Order from the collection');
+        set('vwWhyTitle', 'For the next collection');
+        set('vwFormTitle', 'Tell me what comes next');
+        set('vwCountNote', '');
+      } else {
+        set('vwTitle', 'Be First to Order');
+        set('vwWhyTitle', 'Why the waitlist');
+        set('vwFormTitle', 'Tell me when I can order');
+        set('vwExplore', 'Explore the collection');
+      }
+      document.title = (launched ? 'Ordering Is Open' : 'Be First to Order') + ' — Vedam';
     }
 
     L.onChange(paintMode);
@@ -212,7 +233,7 @@
           lastSent = sig;
           if (j && j.ok) {
             if (j.status === 'already') {
-              succeed('You are already on the waitlist — we have your place held. You will hear from us the moment it opens.');
+              succeed('You are already on the waitlist — we have your place held. You will hear from us the moment ordering opens.');
             } else {
               succeed('Thank you — your place is held. A confirmation is on its way to your inbox.');
             }

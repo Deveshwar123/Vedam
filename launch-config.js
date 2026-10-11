@@ -18,7 +18,10 @@
 window.VEDAM_LAUNCH = {
 
   /* ---------------------------------------------------------------------
-   * 1. WHEN DOES THE COLLECTION OPEN?
+   * 1. WHEN DOES ORDERING OPEN?
+   *
+   * VEDAM itself is already live — this is the moment customers can place
+   * orders, not the moment the brand launches.
    *
    * An ISO 8601 instant. The simplest correct way to write it is with the
    * offset spelled out, so there is no doubt which clock it means:
@@ -51,14 +54,13 @@ window.VEDAM_LAUNCH = {
   /* ---------------------------------------------------------------------
    * 4. HOW THE REST OF THE SITE BEHAVES BEFORE LAUNCH
    *
-   *   'gate' — the site is closed. Every page sends visitors to the
-   *            waitlist until the launch date passes, so nobody sees the
-   *            collection early. Collections, cart and sign-in all come
-   *            back by themselves on the day — nothing to switch on.
-   *            (default)
+   *   'bar'  — VEDAM is live and the whole site is public. A slim bar at
+   *            the foot of every page counts down to ordering opening and
+   *            invites visitors to join the waitlist. (current)
    *
-   *   'bar'  — the site stays open and browsable, with a slim countdown
-   *            bar at the foot of every page inviting visitors to join.
+   *   'gate' — the site is closed: every page sends visitors to the
+   *            waitlist until the date passes. Only for a future
+   *            closed-door drop; not how VEDAM runs today.
    *
    * Always reachable, in either mode: the waitlist itself, the policies
    * page (the privacy notice the form and the emails link to) and the
@@ -73,7 +75,7 @@ window.VEDAM_LAUNCH = {
    * markup. If the collection must be truly unreachable before launch, keep
    * those pages out of the published branch until the day.
    * ------------------------------------------------------------------- */
-  preLaunchMode: 'gate',
+  preLaunchMode: 'bar',
 
   /* ---------------------------------------------------------------------
    * 5. Optional spam speed bump. If you set a JOIN_SECRET script property
