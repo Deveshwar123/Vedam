@@ -1,7 +1,7 @@
 /**
  * Vedam — shared launch state  (loaded by every page)
  * ===========================================================================
- * Answers one question for the whole site: is the house open yet?
+ * Answers one question for the whole site: is the collection open yet?
  *
  *   • resolves the launch date (server value wins over launch-config.js)
  *   • corrects for a visitor's wrong device clock using the server's time

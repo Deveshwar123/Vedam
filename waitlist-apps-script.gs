@@ -71,7 +71,7 @@ var COLS = [
   'Timestamp',      // when they joined
   'Name',
   'Email',          // unique key, stored lowercase
-  'Phone',
+  'Phone',          // required since 11 Oct 2026
   'Source',         // which page/section the signup came from
   'Status',         // Subscribed | Unsubscribed
   'Confirm Email',  // Sent | Failed | Skipped
@@ -237,6 +237,9 @@ function join_(p) {
 
   if (!name)  return { ok: false, error: 'name_required' };
   if (!emailOk_(email)) return { ok: false, error: 'email_invalid' };
+  // Phone is required too. Checked here as well as in the form, because the
+  // form is only a suggestion to anything posting straight at this endpoint.
+  if (!phone) return { ok: false, error: 'phone_required' };
 
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -250,7 +253,7 @@ function join_(p) {
       if (status === 'Unsubscribed') {
         // Coming back after unsubscribing is a fresh, wanted signup.
         setCells_(sh, found.row, idx, {
-          'Timestamp': new Date(), 'Name': name, 'Phone': phone || found.values[idx['Phone']],
+          'Timestamp': new Date(), 'Name': name, 'Phone': phone,
           'Source': source, 'Status': 'Subscribed', 'Unsubscribed At': ''
         });
         sendConfirm_(sh, found.row, idx, name, email);
@@ -705,7 +708,7 @@ function quotaLeft_() {
 /* ----------------------------- email templates ---------------------------- */
 /**
  * Email clients do not load web fonts, so these use Georgia/serif — the same
- * fallback the site already names after Prata and EB Garamond — on the house
+ * fallback the site already names after Prata and EB Garamond — on the brand
  * maroon with gold rules. Tables and inline styles only: that is what Gmail,
  * Outlook and Apple Mail all render the same way.
  */

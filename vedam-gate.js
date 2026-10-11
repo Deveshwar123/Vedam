@@ -1,13 +1,13 @@
 /**
  * Vedam — the pre-launch gate  (must load in <head>, before anything renders)
  * ===========================================================================
- * Before the launch date, the house is closed: every page sends visitors to
+ * Before the launch date, the site is closed: every page sends visitors to
  * waitlist.html. After it, this file does nothing at all and the site behaves
  * exactly as it always has.
  *
  * It runs in the <head>, synchronously, on purpose. Redirecting later — from
  * the foot of the page, or after the bundle unpacks — would let the real site
- * paint for a moment first, which is precisely what a closed house must not
+ * paint for a moment first, which is precisely what a closed site must not
  * show.
  *
  * ---------------------------------------------------------------------------

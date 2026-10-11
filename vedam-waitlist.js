@@ -53,7 +53,7 @@
     }
 
     /**
-     * The launch is announced in IST, because that is the clock the house
+     * The launch is announced in IST, because that is the clock Vedam
      * keeps and the one the announcement was made in. A visitor outside
      * India also gets the same instant on their own clock, so nobody has to
      * do the arithmetic.
@@ -95,8 +95,8 @@
       var closed = !launched;
       var links = document.querySelectorAll('[data-gated]');
       for (var i = 0; i < links.length; i++) links[i].hidden = closed;
-      var house = $('vwFootHouse');
-      if (house) house.hidden = closed;          // the whole column empties out
+      var col = $('vwFootExplore');
+      if (col) col.hidden = closed;              // the whole column empties out
       var mark = $('vwWordmark');
       if (mark) mark.setAttribute('href', closed ? './waitlist.html' : './index.html');
     }
@@ -189,8 +189,9 @@
       if (name.length > 100) { say('err', 'That name is longer than we can store — please shorten it.'); return; }
       if (!email) { say('err', 'Please add your email address — it is how we will tell you we have opened.'); focus('email'); return; }
       if (!emailLooksReal(email)) { say('err', 'That email address does not look right — please check it.'); focus('email'); return; }
-      if (phone && phone.length > 30) { say('err', 'That phone number is longer than we can store.'); return; }
-      if (phone && !/^[\d\s()+\-.]{6,30}$/.test(phone)) { say('err', 'That phone number has characters we cannot read — digits, spaces, + and - only.'); focus('phone'); return; }
+      if (!phone) { say('err', 'Please add a phone number — we use it to confirm your order.'); focus('phone'); return; }
+      if (phone.length > 30) { say('err', 'That phone number is longer than we can store.'); return; }
+      if (!/^[\d\s()+\-.]{6,30}$/.test(phone)) { say('err', 'That phone number has characters we cannot read — digits, spaces, + and - only.'); focus('phone'); return; }
 
       var payload = {
         action: 'join', name: name, email: email, phone: phone,
@@ -230,6 +231,7 @@
           var err = (j && j.error) || '';
           if (err === 'email_invalid') say('err', 'That email address was not accepted — please check it and try again.');
           else if (err === 'name_required') say('err', 'Please tell us your name.');
+          else if (err === 'phone_required') say('err', 'Please add a phone number — we use it to confirm your order.');
           else say('err', 'Something went wrong and your details were not sent. They are still here — please try once more.');
         })
         .catch(function () {

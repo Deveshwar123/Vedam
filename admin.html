@@ -224,7 +224,7 @@
     <h2>Email the list<span class="sub">announcements, updates, the next collection</span></h2>
     <div class="card">
       <div class="wlrow"><label for="wlSubject" style="flex:0 0 100%">Subject</label>
-        <input class="wlsubject" type="text" id="wlSubject" maxlength="200" placeholder="A new collection is coming to the house"></div>
+        <input class="wlsubject" type="text" id="wlSubject" maxlength="200" placeholder="A new collection is coming"></div>
       <div class="wlrow"><label for="wlBody" style="flex:0 0 100%">Message</label>
         <textarea class="wlbody" id="wlBody" maxlength="20000" placeholder="Write in plain paragraphs. Leave a blank line between them.
 
@@ -734,7 +734,7 @@ function wlKpis(st) {
 function wlPaintLaunch(st) {
   if (!st) return;
   const launched = st.mode === "launched";
-  wlEl("wlMode").textContent = launched ? "the house is open" :
+  wlEl("wlMode").textContent = launched ? "the collection is open" :
     (st.launchAt ? "waitlist mode — counting down" : "waitlist mode — no date set yet");
 
   if (st.launchAt) {
@@ -756,7 +756,7 @@ function wlPaintLaunch(st) {
   if (st.collectionUrl) wlEl("wlUrl").value = st.collectionUrl;
   wlEl("wlLaunchNote").textContent = launched
     ? st.launchPending + " subscriber" + (st.launchPending === 1 ? "" : "s") + " still to receive it"
-    : "The date has not passed — sending now opens the house early.";
+    : "The date has not passed — sending now opens the collection early.";
 }
 
 wlEl("wlSaveWhen").addEventListener("click", async () => {

@@ -18,7 +18,7 @@
 window.VEDAM_LAUNCH = {
 
   /* ---------------------------------------------------------------------
-   * 1. WHEN DOES THE HOUSE OPEN?
+   * 1. WHEN DOES THE COLLECTION OPEN?
    *
    * An ISO 8601 instant. The simplest correct way to write it is with the
    * offset spelled out, so there is no doubt which clock it means:
@@ -37,7 +37,7 @@ window.VEDAM_LAUNCH = {
    *
    * Paste the URL you get from step 4 of the setup in
    * waitlist-apps-script.gs. Until it is filled in, the waitlist page
-   * still renders and counts down, but tells visitors to email the house
+   * still renders and counts down, but tells visitors to email Vedam
    * directly instead of silently dropping their details.
    * ------------------------------------------------------------------- */
   endpoint: 'https://script.google.com/macros/s/AKfycbwI9O7iPucvZV1YLoCPUocNg9eYiww2V6FvawmwVUtR7f-vj2_qr_rwmXIe6NBCzWbyGg/exec',
@@ -51,7 +51,7 @@ window.VEDAM_LAUNCH = {
   /* ---------------------------------------------------------------------
    * 4. HOW THE REST OF THE SITE BEHAVES BEFORE LAUNCH
    *
-   *   'gate' — the house is closed. Every page sends visitors to the
+   *   'gate' — the site is closed. Every page sends visitors to the
    *            waitlist until the launch date passes, so nobody sees the
    *            collection early. Collections, cart and sign-in all come
    *            back by themselves on the day — nothing to switch on.

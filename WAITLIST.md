@@ -1,6 +1,6 @@
 # Vedam — Waitlist & Launch
 
-The house is closed until the launch date: every page sends visitors to
+The site is closed until the launch date: every page sends visitors to
 `waitlist.html`, where they can join the list and watch the countdown. On the
 day, the site opens by itself and everyone on the list is emailed once.
 
@@ -12,9 +12,9 @@ Nothing has to be pushed, redeployed or clicked on the day.
 
 | File | What it does |
 |---|---|
-| `waitlist.html` | The waitlist page — countdown, sign-up form, and the "house is open" state it switches to at launch. |
+| `waitlist.html` | The waitlist page — countdown, sign-up form, and the "collection is open" state it switches to at launch. |
 | `launch-config.js` | **The one file to edit.** Launch date, backend URL, collection link, gate mode. |
-| `vedam-gate.js` | Runs in every page's `<head>` before anything paints, and sends visitors to the waitlist while the house is closed. |
+| `vedam-gate.js` | Runs in every page's `<head>` before anything paints, and sends visitors to the waitlist while the site is closed. |
 | `vedam-launch.js` | Resolves the launch date (server value beats the file), adds the Waitlist nav link and the countdown bar, flips the site to launch mode on the day. |
 | `vedam-waitlist.js` | The waitlist page itself: countdown, validation, signup, the launch switch. |
 | `waitlist-apps-script.gs` | The backend. Sheet storage, confirmation email, launch email, campaigns, unsubscribe. Lives in Apps Script, not on GitHub Pages. |
@@ -121,7 +121,7 @@ the same code sends through Resend instead — no change to the site.
 
 `launch-config.js` → `preLaunchMode`:
 
-- `'gate'` *(default)* — the house is closed; everything redirects to the waitlist.
+- `'gate'` *(default)* — the site is closed; everything redirects to the waitlist.
 - `'bar'` — the site stays browsable with a countdown bar at the foot of each page.
 
 Always reachable either way: the waitlist, the policies page and the owner
