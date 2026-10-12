@@ -7,8 +7,8 @@
  * catalogue and verifies who is asking. Nothing here is trusted.
  * ===========================================================================
  */
-import { whoAmI, signInUrl, readCart, clearCart, placeOrder, finishOrder,
-         settings, isConfigured, inr, esc } from './vedam-orders.js';
+import { whoAmI, signInUrl, readCart, clearCart, dropFromCart, placeOrder,
+         finishOrder, settings, isConfigured, inr, esc } from './vedam-orders.js';
 
 const $ = (id) => document.getElementById(id);
 const CFG = window.VEDAM_ORDERS || {};
@@ -220,6 +220,25 @@ $('coForm').addEventListener('submit', async (ev) => {
         address_required: 'Please give a delivery address.',
         not_configured: 'The order desk is not connected yet.'
       };
+      // A piece the catalogue no longer carries can never go through, so
+      // "please try again" would strand the customer in a loop. Take that
+      // one piece out and let them place the rest.
+      if (String(res.error || '').indexOf('unknown_item:') === 0) {
+        const badId = String(res.error).slice('unknown_item:'.length);
+        const gone = cart.find((it) => String(it.id) === badId);
+        const label = (gone && gone.name) ? gone.name : 'One of your pieces';
+        cart = await dropFromCart(badId);
+        if (!cart.length) {
+          say('', '');
+          only('coEmpty');
+          return;
+        }
+        buildPieces();
+        say('err', label + ' is no longer available, so we have taken it out of '
+                 + 'your cart. Please check your measurements and place the order again.');
+        return;
+      }
+
       say('err', map[res.error] || ('Your order was not placed — please try again. (' + esc(res.error || 'unknown') + ')'));
       return;
     }

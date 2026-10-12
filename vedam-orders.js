@@ -86,6 +86,30 @@ export async function clearCart() {
   }
 }
 
+/** Take one piece out of the cart, everywhere the cart lives.
+ *  Used when the backend rejects a piece that has since left the catalogue:
+ *  retrying can only fail again, so that one piece goes rather than the
+ *  customer's whole order. */
+export async function dropFromCart(id) {
+  const u = await whoAmI();
+  const userKey = 'vedamCart::' + (u ? u.uid : 'guest');
+  let kept = [];
+  for (const k of [userKey, 'vedamCart::guest']) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(k));
+      if (!Array.isArray(raw)) continue;
+      const next = raw.filter((it) => String(it && it.id) !== String(id));
+      localStorage.setItem(k, JSON.stringify(next));
+      if (k === userKey) kept = next;
+    } catch (e) {}
+  }
+  try { window.dispatchEvent(new CustomEvent('vedam-cart-cleared')); } catch (e) {}
+  if (window.vedamFB && window.vedamFB.saveCart) {
+    try { await window.vedamFB.saveCart(kept); } catch (e) {}
+  }
+  return kept;
+}
+
 /* ------------------------------- the backend ------------------------------ */
 
 export function isConfigured() {
