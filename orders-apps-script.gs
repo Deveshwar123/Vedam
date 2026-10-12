@@ -1033,18 +1033,11 @@ function randomToken_(n) {
  * Keep in step with the catalogue in admin.html and the collection pages.
  * ========================================================================= */
 var CATALOG = {
-  'srngara-padmaja':   { name: 'The Padmaja Lehenga',      collection: 'Śṛṅgāra · Bridal Couture',        price: 68000 },
-  'srngara-alankara':  { name: 'The Alankara Kanjivaram',  collection: 'Śṛṅgāra · Bridal Couture',        price: 54000 },
-  'srngara-raagini':   { name: 'The Raagini Anarkali',     collection: 'Śṛṅgāra · Bridal Couture',        price: 46500 },
-  'srngara-sindoora':  { name: 'The Sindoora Dupatta',     collection: 'Śṛṅgāra · Bridal Couture',        price: 18500 },
-  'nizami-mehfil':     { name: 'The Mehfil Organza Saree', collection: 'Nizami Nights · Evening & Occasion', price: 42500 },
-  'nizami-mahtab':     { name: 'The Mahtab Saree',         collection: 'Nizami Nights · Evening & Occasion', price: 36500 },
-  'nizami-choga':      { name: 'The Deccan Velvet Choga',  collection: 'Nizami Nights · Evening & Occasion', price: 38000 },
-  'nizami-qawwali':    { name: 'The Qawwali Kurta Set',    collection: 'Nizami Nights · Evening & Occasion', price: 29000 },
-  'manduva-aangan':    { name: 'The Aangan Saree',         collection: 'Manduva · Heritage Daywear',       price: 16500 },
-  'manduva-verandah':  { name: 'The Verandah Kurta',       collection: 'Manduva · Heritage Daywear',       price: 9800  },
-  'manduva-tulasi':    { name: 'The Tulasi Set',           collection: 'Manduva · Heritage Daywear',       price: 14200 },
-  'manduva-courtyard': { name: 'The Courtyard Dupatta',    collection: 'Manduva · Heritage Daywear',       price: 6500  }
+  // Early-bird pricing: half of the full price while the first collection
+  // opens. Full prices were Lāsya ₹13,000, Kānti ₹8,000, Lāvaṇya ₹8,000.
+  'srngara-lasya':   { name: 'The Lāsya Dress',   collection: 'Śṛṅgāra · The First Collection', price: 6500 },
+  'srngara-kanti':   { name: 'The Kānti Skirt',   collection: 'Śṛṅgāra · The First Collection', price: 4000 },
+  'srngara-lavanya': { name: 'The Lāvaṇya Top',   collection: 'Śṛṅgāra · The First Collection', price: 4000 }
 };
 
 /* ===========================================================================

@@ -369,18 +369,9 @@ try { await setPersistence(auth, browserLocalPersistence); } catch (e) {}
 
 const INQ_URL = "https://script.google.com/macros/s/AKfycbxE592Swh68sIeCNjz4_GDbx4hDSykv4Ax966F7iC1WaRAqGoho70Td6Rr-zcRgzA7lMg/exec";
 const CATALOG = [
-  {"id":"srngara-padmaja","collection":"Śṛṅgāra · Bridal Couture","name":"The Padmaja Lehenga","note":"Zardozi and real zari on Gadwal silk.","price":68000,"page":"srngara.html"},
-  {"id":"srngara-alankara","collection":"Śṛṅgāra · Bridal Couture","name":"The Alankara Kanjivaram","note":"Temple border woven in real zari.","price":54000,"page":"srngara.html"},
-  {"id":"srngara-raagini","collection":"Śṛṅgāra · Bridal Couture","name":"The Raagini Anarkali","note":"Dabka and river pearls on raw silk.","price":46500,"page":"srngara.html"},
-  {"id":"srngara-sindoora","collection":"Śṛṅgāra · Bridal Couture","name":"The Sindoora Dupatta","note":"Tissue silk with scattered zardozi buta.","price":18500,"page":"srngara.html"},
-  {"id":"nizami-mehfil","collection":"Nizami Nights · Evening & Occasion","name":"The Mehfil Organza Saree","note":"Moonlit organza with a Deccan velvet blouse.","price":42500,"page":"nizami-nights.html"},
-  {"id":"nizami-mahtab","collection":"Nizami Nights · Evening & Occasion","name":"The Mahtab Saree","note":"Midnight chiffon with silver mukaish stars.","price":36500,"page":"nizami-nights.html"},
-  {"id":"nizami-choga","collection":"Nizami Nights · Evening & Occasion","name":"The Deccan Velvet Choga","note":"Hand-cut velvet with moon-gold cordwork.","price":38000,"page":"nizami-nights.html"},
-  {"id":"nizami-qawwali","collection":"Nizami Nights · Evening & Occasion","name":"The Qawwali Kurta Set","note":"Chanderi silk for long nights of song.","price":29000,"page":"nizami-nights.html"},
-  {"id":"manduva-aangan","collection":"Manduva · Heritage Daywear","name":"The Aangan Saree","note":"Handloom cotton-silk with a temple-red border.","price":16500,"page":"manduva.html"},
-  {"id":"manduva-verandah","collection":"Manduva · Heritage Daywear","name":"The Verandah Kurta","note":"Mangalagiri cotton with shell buttons.","price":9800,"page":"manduva.html"},
-  {"id":"manduva-tulasi","collection":"Manduva · Heritage Daywear","name":"The Tulasi Set","note":"Kurta and dupatta in leaf-soft khadi.","price":14200,"page":"manduva.html"},
-  {"id":"manduva-courtyard","collection":"Manduva · Heritage Daywear","name":"The Courtyard Dupatta","note":"Cotton-silk with a thin zari selvedge.","price":6500,"page":"manduva.html"}
+  {"id":"srngara-lasya","collection":"Śṛṅgāra · The First Collection","name":"The Lāsya Dress","note":"Hand-embroidered motifs inspired by Indian dance.","price":6500,"page":"srngara.html"},
+  {"id":"srngara-kanti","collection":"Śṛṅgāra · The First Collection","name":"The Kānti Skirt","note":"Gomātā motifs — radiance rooted in reverence.","price":4000,"page":"srngara.html"},
+  {"id":"srngara-lavanya","collection":"Śṛṅgāra · The First Collection","name":"The Lāvaṇya Top","note":"Breezy, flowy, beautifully versatile.","price":4000,"page":"srngara.html"}
 ];
 const PRICE = Object.fromEntries(CATALOG.map(p => [p.id, p.price]));
 
