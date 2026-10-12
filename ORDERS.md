@@ -24,6 +24,20 @@ Everything else happens on its own.
 
 ---
 
+## Live as of 11 Oct 2026
+
+| | |
+|---|---|
+| **Orders sheet** | [Vedam Orders](https://docs.google.com/spreadsheets/d/1SxSNiQuB5P9EUwnZTItZ03ltWT9C44XbxVXs2YriRuQ/edit) |
+| **Apps Script** | [Vedam Orders project](https://script.google.com/u/0/home/projects/1Unm75NvvizQ9FFv7I67a6lg5lZQUzogoNpNLue9loUsU_cUGEAYbmQiz/edit) |
+| **Payment** | manual — UPI `9676365420-2@ybl`, confirmed by hand |
+| **Queue settings** | 3 pieces a week · 21 days a piece · 5 days shipping |
+
+⚠️ **One step outstanding:** the deployment is on an older version. Publish a
+new one so the *sheet dropdown* confirms payments — Deploy ▸ Manage
+deployments ▸ pencil ▸ Version **New version** ▸ Deploy. Until then, use the
+portal or ask for a confirm through the API; everything else already works.
+
 ## Setup
 
 1. New Google Sheet called **Vedam Orders**.
