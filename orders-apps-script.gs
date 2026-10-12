@@ -78,7 +78,14 @@ var COLS = [
   'Estimated Delivery Date',     // OWNER MAY OVERRIDE
   'Tracking Number',             // OWNER EDITS
   'Courier',                     // OWNER EDITS
-  'Last Updated'                 // system
+  'Last Updated',                // system
+  // Hidden, system-owned. Developer metadata would have been tidier, but
+  // Apps Script only allows it on a whole row/column/sheet, and the live
+  // first order died on exactly that. A hidden column has no such rule,
+  // travels with the row when the sheet is sorted, and can be read back
+  // without a second API call.
+  'Order Data',                  // system — the structured order, as JSON
+  'ETA Source'                   // system — 'auto' or 'manual'
 ];
 
 /** Columns the owner is meant to edit. Everything else is protected. */
@@ -214,6 +221,11 @@ function formatOrdersSheet_(sh) {
   band('Order Status', 'Delivered', '#CDE7CF');
   band('Order Status', 'Cancelled', '#E2E3E5');
   sh.setConditionalFormatRules(rules);
+
+  // The two system columns are for the machine, not the owner.
+  ['Order Data', 'ETA Source'].forEach(function (n) {
+    if (idx[n] !== undefined) sh.hideColumns(idx[n] + 1);
+  });
 
   if (!sh.getFilter()) sh.getRange(1, 1, last, COLS.length).createFilter();
 
@@ -393,6 +405,7 @@ function placeOrder_(p) {
     put('Order Status', 'Payment Pending');
     put('Queue Position', '');
     put('Last Updated', now);
+    put('ETA Source', 'auto');
     sh.appendRow(row);
 
     // The machine-readable copy of the order lives in developer metadata on
@@ -464,8 +477,13 @@ function confirmPayment_(orderId, by) {
     var idx = headerIndex_(sh);
     var found = findRow_(sh, idx, orderId);
     if (!found) return { ok: false, error: 'not_found' };
-    if (String(found.values[idx['Payment Status']]) === 'Paid') {
-      return { ok: true, already: true };            // never pay twice
+    // "Already confirmed" is the presence of a confirmation TIMESTAMP, not
+    // the word Paid in the status cell. When the owner confirms a transfer
+    // by choosing Paid in the sheet, the cell already says Paid by the time
+    // this runs — testing the status would make the system decide it had
+    // nothing to do, and the order would never reach the queue.
+    if (found.values[idx['Payment Confirmation Date']] instanceof Date) {
+      return { ok: true, already: true };            // never confirm twice
     }
     var now = new Date();
     setCells_(sh, found.row, idx, {
@@ -853,44 +871,59 @@ function findByClientRef_(ref) {
   var sh = ordersSheet_();
   var idx = headerIndex_(sh);
   var last = sh.getLastRow();
-  for (var r = 2; r <= last; r++) {
-    var m = getMeta_(sh, r);
-    if (m && m.clientRef && m.clientRef === ref) {
-      return { orderId: m.orderId, view: buildView_(sh, r, idx) };
-    }
+  if (last < 2 || idx['Order Data'] === undefined) return null;
+  var col = sh.getRange(2, idx['Order Data'] + 1, last - 1, 1).getValues();
+  // Newest first: a repeated submission is almost always the most recent row.
+  for (var i = col.length - 1; i >= 0; i--) {
+    if (!col[i][0]) continue;
+    try {
+      var m = JSON.parse(col[i][0]);
+      if (m && m.clientRef && m.clientRef === ref) {
+        return { orderId: m.orderId, view: buildView_(sh, i + 2, idx) };
+      }
+    } catch (e) {}
   }
   return null;
 }
 
-/* Developer metadata keeps the structured order on its row without cluttering
- * the sheet, and it travels with the row when the owner sorts or filters. */
+/* The structured order rides along in a hidden column on its own row, so it
+ * survives sorting and filtering and needs no second API call to read. */
 function setMeta_(sh, row, obj) {
-  sh.getRange(row, 1).addDeveloperMetadata('vedamOrder', JSON.stringify(obj),
-    SpreadsheetApp.DeveloperMetadataVisibility.DOCUMENT);
+  // Never fatal: an order already written to the sheet must not be rejected
+  // because its index entry failed, or the customer would be told the order
+  // did not go through while the row sits there.
+  try {
+    var idx = headerIndex_(sh);
+    if (idx['Order Data'] === undefined) return false;
+    sh.getRange(row, idx['Order Data'] + 1).setValue(JSON.stringify(obj));
+    return true;
+  } catch (e) {
+    audit_((obj && obj.orderId) || '', 'Order Data', '', 'failed', 'system', String(e && e.message));
+    return false;
+  }
 }
 function getMeta_(sh, row) {
   try {
-    var md = sh.getRange(row, 1).getDeveloperMetadata();
-    for (var i = 0; i < md.length; i++) {
-      if (md[i].getKey() === 'vedamOrder') return JSON.parse(md[i].getValue());
-    }
-  } catch (e) {}
-  return null;
+    var idx = headerIndex_(sh);
+    if (idx['Order Data'] === undefined) return null;
+    var raw = sh.getRange(row, idx['Order Data'] + 1).getValue();
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
 }
 function markManualEstimate_(sh, row) {
   try {
-    var md = sh.getRange(row, 1).getDeveloperMetadata();
-    for (var i = 0; i < md.length; i++) if (md[i].getKey() === 'vedamManualEta') return;
-    sh.getRange(row, 1).addDeveloperMetadata('vedamManualEta', '1',
-      SpreadsheetApp.DeveloperMetadataVisibility.DOCUMENT);
+    var idx = headerIndex_(sh);
+    if (idx['ETA Source'] !== undefined) {
+      sh.getRange(row, idx['ETA Source'] + 1).setValue('manual');
+    }
   } catch (e) {}
 }
 function isManualEstimate_(sh, row) {
   try {
-    var md = sh.getRange(row, 1).getDeveloperMetadata();
-    for (var i = 0; i < md.length; i++) if (md[i].getKey() === 'vedamManualEta') return true;
-  } catch (e) {}
-  return false;
+    var idx = headerIndex_(sh);
+    if (idx['ETA Source'] === undefined) return false;
+    return String(sh.getRange(row, idx['ETA Source'] + 1).getValue()) === 'manual';
+  } catch (e) { return false; }
 }
 
 /* --------------------------------- audit ---------------------------------- */
