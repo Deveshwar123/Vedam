@@ -343,6 +343,70 @@ gstatic — the fix is that the UI now waits through it instead of failing.
 
 ---
 
+## VED-5 — Main piece photo silently cropped to ~65% on the collection page
+
+**Status** Closed — fixed in `fb7b746`
+**Reported** 11 Oct 2026, during the Śṛṅgāra one-collection rebuild
+**Severity** Visual, but on the page the whole launch points at
+
+**Symptom**
+On `srngara.html` the large photo in each piece row rendered at a different
+size per row — 487px, 370px, 589px wide — inside grid tracks that were all
+385px. Only the Kānti row happened to be correct. Because the frame sets
+`overflow: hidden`, nothing looked broken: the main photo was just quietly
+cropped to roughly 65% of itself on two of the three rows, and the frame
+bled 120px into the side column.
+
+**Root cause**
+A three-step feedback loop in the `.pc-figs` grid:
+
+1. The two side images were ordinary in-flow content, so each `.side .frame`
+   took its automatic height from the image's *intrinsic* height (1200px).
+2. That made the side column, not the main frame, the tallest item in the
+   row, so the grid row stretched to it.
+3. `.pc-figs .main` had `aspect-ratio: 3/4` and no definite width. With its
+   block size now definite (the over-tall stretched row), Chrome derived the
+   *inline* size from it — height × 3/4 — which exceeded the track.
+
+Each row stretched by a different amount because the three sets of photos
+have different intrinsic heights, which is why the widths all differed.
+
+**Fix**
+- Side images are `position: absolute`, so they contribute no intrinsic
+  height and the main frame alone sets the row height.
+- `.pc-figs .main` is `box-sizing: border-box` with an explicit `width: 100%`
+  and `align-self: start`, so its width can never again be derived from a
+  row height.
+
+**Two defects introduced while fixing it, both caught before commit**
+- The absolutely positioned side images were given four insets with `width`
+  and `height: auto`. For a *replaced* element that resolves to the intrinsic
+  size, not the inset box, so they rendered at a full 900×1200 and showed a
+  tiny top-left crop. Sizes are now explicit: `calc(100% - 16px)`.
+- The new `@media (max-width: 540px)` block was inserted *before* the
+  `.pc-figs` base rules. Equal specificity, so the base rules won on source
+  order and the query only half-applied — the side frames collapsed to 52px.
+  The block now sits after the rules it overrides.
+
+**Verification**
+Measured in same-origin iframes at 360 / 390 / 540 / 700 / 1100 / 1800px
+(the browser window is maximized and refuses to resize, so iframes supplied
+the viewports). At every width: no horizontal overflow, every main frame
+within its track, no image escaping its frame, and the side column's height
+matching the main frame's to within 2px.
+
+| width | layout | main frame | side column |
+|---|---|---|---|
+| 360 | stacked, side 2-up | 320×427 | 2 × 155×201 |
+| 390 | stacked, side 2-up | 350×467 | 2 × 170×221 |
+| 540 | stacked, side 2-up | 486×648 | 2 × 238×311 |
+| 700 | 2-col | 413×551 | 207×551 |
+| 1100 | 2-col | 309×412 | 154×412 |
+| 1800 | 2-col | 385×514 | 193×514 |
+
+---
+
 ## Open tickets
 
 _None._
+
