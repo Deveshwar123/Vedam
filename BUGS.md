@@ -456,6 +456,53 @@ animations don't skew it.
 
 ---
 
+## VED-7 — Cart shows an empty placeholder box instead of the piece's photo
+
+**Status** Closed — fixed in the commit that adds this ticket
+**Opened** 17 Oct 2026, found while filling the site's blank image spots
+**Closed** 17 Oct 2026
+**Severity** Visual, on the page every order passes through. Latent until
+ordering opens on 25 Oct, because nobody can add to the cart before then.
+
+**Symptom**
+Each line in `cart.html` showed a framed grey placeholder reading e.g.
+"The Lāsya Dress — product photo" instead of the piece's photograph.
+
+**Root cause**
+The cart template still rendered the design tool's `<image-slot>` element,
+fed by `item.slotId` and `item.placeholder`. Every cart item has carried
+its real photo in `item.image` since the Śṛṅgāra rebuild (`fb7b746`), but
+nothing in the cart ever read that field.
+
+**Fix**
+- The slot became an `<img>` bound to `item.imageSrc`, absolutely positioned
+  with explicit 100% width/height inside the 3:4 frame (the VED-5 lesson:
+  an in-flow image could resize an `aspect-ratio` box).
+- `renderVals` sets `imageSrc` from `item.image`. A piece from a retired
+  collection has no `image`, so it gets a 1×1 transparent GIF and empty alt
+  text: a plain maroon frame, not a broken-image icon. Those pieces are
+  removed at checkout anyway (see `8f90823`).
+- **Trap avoided:** the first attempt used `src="{{ item.imageSrc }}"`. The
+  browser fetched the literal `/{{ item.imageSrc }}` (a 404) before the
+  runtime bound the value, because the template's markup is live DOM before
+  hydration. `sc-camel-src` is invisible to the browser until the runtime
+  turns it into `src`, so no stray request is made.
+
+**Verification**
+Three items were injected into the cart component's in-memory state, with
+`save` stubbed so nothing reached Firestore. Tested at 390px and 1000px.
+
+| item | src | rendered |
+|---|---|---|
+| Lāsya Dress | `images/srngara-lasya-1.jpg` | photo, 101×135 in a 104×138 frame |
+| Kānti Skirt (qty 2) | `images/srngara-kanti-1.jpg` | photo, 101×135 |
+| retired Nizami piece | transparent GIF | empty maroon frame, `alt=""` |
+
+Requests whose URL contains `{{` or `%7B%7B`: 1 before the change to
+`sc-camel-src`, 0 after.
+
+---
+
 ## Open tickets
 
 _None._
