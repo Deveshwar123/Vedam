@@ -406,6 +406,56 @@ matching the main frame's to within 2px.
 
 ---
 
+## VED-6 — Kolam (muggu) border covers the text on phones
+
+**Status** Closed — fixed in the commit that adds this ticket
+**Opened** 17 Oct 2026, reported from someone viewing the site on a phone
+**Closed** 17 Oct 2026
+**Severity** Visual / readability, on the home page
+
+**Symptom**
+On a phone, the decorative kolam border on `index.html` sat on top of the
+text in the Philosophy section ("Designed Between Memory and Modernity") and
+in the footer. The first letters of every line and the ends of long lines
+were hidden under the side ornaments.
+
+**Root cause**
+The border is a `position: fixed` SVG at `z-index: 60`, drawn above the
+page, with a column of interlaced diamond modules down each side. Under
+700px the columns reach **49px** in from each edge; above 700px they reach
+**69px**. The two sections with left-aligned text, `#philosophy` and
+`#contact`, pad their sides with `clamp(20px, 5vw, 72px)`. That is 20px on a
+phone, so the text started well inside the ornament. The same overlap,
+smaller, existed on tablets and laptops up to ~1400px (35px at 700, 51px at
+1024, 64px at 1280, against a 69px border).
+
+**Fix**
+- Under 700px (the code's existing `small` breakpoint) the side columns and
+  top-corner rosettes are no longer drawn. A phone is too narrow to keep
+  both the columns and a readable text width. The bottom band and its corner
+  knots still draw in on scroll. The stage counter only advances for parts
+  that are drawn, so the scroll-drawn timing doesn't stall on empty stages.
+- From 700px up, `#philosophy` and `#contact` get
+  `padding-inline: max(clamp(20px, 5vw, 72px), 80px)`, which clears the 69px
+  border with room to spare.
+
+**Verification**
+Same-origin iframes at each width. Side extent read from the drawn SVG's
+`getBBox()`, text extent from untransformed offsets, so the scroll-reveal
+animations don't skew it.
+
+| width | side border reaches | text starts (before → after) | overlaps (before → after) |
+|---|---|---|---|
+| 360 | — (not drawn) | 20 → 20 | 24 → 0 |
+| 390 | — | 20 → 20 | 20 → 0 |
+| 600 | — | 30 → 30 | 13 → 0 |
+| 700 | 69 | 35 → 80 | 13 → 0 |
+| 1024 | 69 | 51 → 80 | 11 → 0 |
+| 1280 | 69 | 64 → 80 | 9 → 0 |
+| 1800 | 69 | 72 → 80 | 0 → 0 |
+
+---
+
 ## Open tickets
 
 _None._
