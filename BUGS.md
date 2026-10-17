@@ -503,6 +503,42 @@ Requests whose URL contains `{{` or `%7B%7B`: 1 before the change to
 
 ---
 
+## VED-8 — GitHub Pages deploys failing: Jekyll choked on BUGS.md
+
+**Status** Closed — fixed in the commit that adds this ticket
+**Opened** 17 Oct 2026 · **Closed** 17 Oct 2026
+**Severity** High: nothing pushed after `aff3bfb` reached the live site
+
+**Symptom**
+`ca48a13` (photos) and `ee52355` (mailer) were pushed but never went live.
+The new images returned 404 and the cart still served the old template.
+Actions showed "pages build and deployment" failing at *Build with Jekyll*.
+
+**Root cause**
+GitHub Pages runs the repo through Jekyll by default, and its
+optional-front-matter plugin renders every `.md` file through Liquid. The
+VED-7 ticket above quotes the template syntax it is about, double-brace
+bindings, and an unterminated one on line 501 is a Liquid syntax error:
+`Variable '{{' was not properly terminated`. A single failed render fails
+the whole build, so no page deployed. The bug was introduced by `8daa35d`,
+the commit that added VED-7.
+
+**Fix**
+An empty `.nojekyll` at the repo root, so Pages publishes the files as they
+are. The site is static HTML bundles and never used Jekyll for anything.
+That makes this whole class of failure impossible, rather than escaping
+braces in one file and waiting for the next note to quote a template.
+Checked first: the repo has no `_`- or `.`-prefixed files that Jekyll had
+been keeping off the site. One side effect: the `.md` notes are now served
+as raw Markdown instead of rendered pages. They were public either way.
+
+**Verification**
+See the commit message and the vault note *Vedam To-Do 17 Oct 2026*: the
+Pages run for this commit succeeds, and the six new images plus the cart
+change return 200 on the live site.
+
+---
+
 ## Open tickets
 
 _None._
