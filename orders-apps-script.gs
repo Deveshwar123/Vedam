@@ -44,7 +44,9 @@
  *   ADMIN_TOKEN        owner-only actions
  *   FIREBASE_API_KEY   public web key, used to verify customer ID tokens
  *   SITE_URL           used in email links
- *   PAY_PROVIDER       'manual' (default) | 'phonepe'
+ *   SEND_AS            verified Gmail "Send mail as" alias to send customer
+ *                      mail from, e.g. vedavalavala08@gmail.com
+ *   PAY_PROVIDER      'manual' (default) | 'phonepe'
  *   PHONEPE_MERCHANT_ID / PHONEPE_SALT_KEY / PHONEPE_SALT_INDEX
  *   UPI_ID, BANK_DETAILS   shown at checkout while PAY_PROVIDER is 'manual'
  *   PROD_CAPACITY_PER_WEEK / PROD_DAYS_PER_PIECE / SHIP_DAYS
@@ -1068,10 +1070,15 @@ function sendOrderMail_(view, event, subject, innerHtml, textBody) {
   if (!to) return { ok: false, error: 'no email' };
 
   try {
-    MailApp.sendEmail({
-      to: to, subject: subject, htmlBody: shell_(innerHtml, view),
-      body: textBody, name: 'Vedam'
-    });
+    var sendAs = sendAs_();
+    if (sendAs) {
+      GmailApp.sendEmail(to, subject, textBody, { htmlBody: shell_(innerHtml, view), name: 'Vedam', from: sendAs });
+    } else {
+      MailApp.sendEmail({
+        to: to, subject: subject, htmlBody: shell_(innerHtml, view),
+        body: textBody, name: 'Vedam'
+      });
+    }
     markSent_(view.orderId, event);
     audit_(view.orderId, 'Email', '', event, 'system', 'sent');
     return { ok: true };
@@ -1081,6 +1088,28 @@ function sendOrderMail_(view, event, subject, innerHtml, textBody) {
     audit_(view.orderId, 'Email', '', event, 'system', 'FAILED: ' + err.message);
     return { ok: false, error: err.message };
   }
+}
+
+/** SEND_AS is used only once Gmail lists it as a verified alias of the account
+ *  that owns this script; until then customer mail goes out as before. */
+var sendAsCache_;
+function sendAs_() {
+  if (sendAsCache_ !== undefined) return sendAsCache_;
+  var want = String(PropertiesService.getScriptProperties().getProperty('SEND_AS') || '').trim().toLowerCase();
+  sendAsCache_ = '';
+  if (!want) return sendAsCache_;
+  try {
+    GmailApp.getAliases().forEach(function (a) { if (String(a).toLowerCase() === want) sendAsCache_ = want; });
+  } catch (e) {}
+  return sendAsCache_;
+}
+
+/** Run once from the editor after setting SEND_AS: it asks for the Gmail
+ *  permission GmailApp needs, then logs whether the alias is usable. */
+function checkSendAs() {
+  Logger.log('SEND_AS: ' + (PropertiesService.getScriptProperties().getProperty('SEND_AS') || '(not set)'));
+  Logger.log('Gmail aliases on this account: ' + JSON.stringify(GmailApp.getAliases()));
+  Logger.log(sendAs_() ? 'OK: customer mail will be sent from ' + sendAs_() : 'Not active yet: mail still goes out from ' + Session.getEffectiveUser().getEmail());
 }
 
 function customerEmailFor_(orderId) {

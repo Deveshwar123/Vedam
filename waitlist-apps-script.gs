@@ -47,6 +47,8 @@
  *   SITE_URL        site root, used in email links
  *   FROM_NAME       display name on outgoing mail            (default "Vedam")
  *   REPLY_TO        reply address                   (default the Gmail account)
+ *   SEND_AS         verified Gmail "Send mail as" alias to send from, e.g.
+ *                   vedavalavala08@gmail.com (ignored until Gmail verifies it)
  *   JOIN_SECRET     optional spam speed bump, see note in doPost
  *   RESEND_API_KEY  optional — if present, mail goes out through Resend
  *   MAIL_FROM       required with RESEND_API_KEY, e.g. "Vedam <hello@vedam.in>"
@@ -685,13 +687,48 @@ function send_(to, subject, html, text) {
   }
 
   try {
-    var opts = { to: to, subject: subject, htmlBody: html, body: text, name: fromName };
-    if (replyTo) opts.replyTo = replyTo;
-    MailApp.sendEmail(opts);
+    var sendAs = sendAs_();
+    if (sendAs) {
+      var gopts = { htmlBody: html, name: fromName, from: sendAs };
+      if (replyTo) gopts.replyTo = replyTo;
+      GmailApp.sendEmail(to, subject, text, gopts);
+    } else {
+      var opts = { to: to, subject: subject, htmlBody: html, body: text, name: fromName };
+      if (replyTo) opts.replyTo = replyTo;
+      MailApp.sendEmail(opts);
+    }
     return { ok: true, provider: 'Gmail' };
   } catch (e) {
     return { ok: false, error: 'Gmail: ' + e.message, provider: 'Gmail' };
   }
+}
+
+/**
+ * SEND_AS is a "Send mail as" address on the Gmail account that owns this
+ * script (Gmail ▸ Settings ▸ Accounts and Import). It is used only once Gmail
+ * lists it as a verified alias; until then mail goes out from the owning
+ * account exactly as before, so setting the property early breaks nothing.
+ * Looked up once per execution — a launch batch sends dozens of messages.
+ */
+var sendAsCache_;
+function sendAs_() {
+  if (sendAsCache_ !== undefined) return sendAsCache_;
+  var want = String(PropertiesService.getScriptProperties().getProperty('SEND_AS') || '').trim().toLowerCase();
+  sendAsCache_ = '';
+  if (!want) return sendAsCache_;
+  try {
+    GmailApp.getAliases().forEach(function (a) { if (String(a).toLowerCase() === want) sendAsCache_ = want; });
+  } catch (e) {}
+  return sendAsCache_;
+}
+
+/** Run once from the editor after setting SEND_AS: it asks for the Gmail
+ *  permission GmailApp needs, then logs whether the alias is usable. */
+function checkSendAs() {
+  var want = PropertiesService.getScriptProperties().getProperty('SEND_AS') || '(not set)';
+  Logger.log('SEND_AS: ' + want);
+  Logger.log('Gmail aliases on this account: ' + JSON.stringify(GmailApp.getAliases()));
+  Logger.log(sendAs_() ? 'OK: mail will be sent from ' + sendAs_() : 'Not active yet: mail still goes out from ' + Session.getEffectiveUser().getEmail());
 }
 
 function mailQuota_() {
